@@ -1,0 +1,18 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+# https://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+# <LICENSE-MIT or https://opensource.org/licenses/MIT>, at your
+# option. This file may not be copied, modified, or distributed
+# except according to those terms.
+
+[package]
+name = "sbat-tool"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.70"
+clap = { version = "4.2.1", features = ["derive"] }
+fs-err = "2.9.0"
+object = { version = "0.30.3", default-features = false, features = ["pe", "read", "std"] }
