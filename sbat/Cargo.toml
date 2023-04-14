@@ -11,6 +11,12 @@ name = "sbat"
 version = "0.1.0"
 edition = "2021"
 
+categories = ["data-structures", "embedded", "no-std"]
+description = "UEFI Secure Boot Advanced Targeting (SBAT) no_std library"
+keywords = ["sbat", "uefi", "no_std"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/google/sbat-rs"
+
 [dependencies]
 arrayvec = { version = "0.7.0", default-features = false }
 ascii = { version = "1.0.0", default-features = false }
