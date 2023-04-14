@@ -76,7 +76,7 @@ impl<'a, T> Veclike<T> for SliceVec<'a, T> {
     }
 }
 
-impl<'a, T, const N: usize> Veclike<T> for ArrayVec<T, N> {
+impl<T, const N: usize> Veclike<T> for ArrayVec<T, N> {
     fn try_push(&mut self, t: T) -> Result<()> {
         self.try_push(t).map_err(|_| Error::TooManyRecords)
     }
