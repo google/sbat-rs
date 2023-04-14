@@ -11,6 +11,12 @@ name = "sbat-tool"
 version = "0.1.0"
 edition = "2021"
 
+categories = ["command-line-utilities"]
+description = "UEFI Secure Boot Advanced Targeting (SBAT) command-line tool"
+keywords = ["sbat", "uefi", "cli"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/google/sbat-rs"
+
 [dependencies]
 anyhow = "1.0.70"
 clap = { version = "4.2.1", features = ["derive"] }
