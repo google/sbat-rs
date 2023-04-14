@@ -23,7 +23,6 @@ struct Args {
 enum Action {
     /// Print the '.sbat' section of a PE executable.
     Dump { input: PathBuf },
-
     // TODO(nicholasbishop): add more options, such as validating PE
     // data and adding a '.sbat' section to an existing executable.
 }

@@ -103,7 +103,9 @@ where
 
 /// CSV record. This represents a line of comma-separated fields.
 #[derive(Clone, Default)]
-pub struct Record<'a, const NUM_FIELDS: usize>(ArrayVec<&'a AsciiStr, NUM_FIELDS>);
+pub struct Record<'a, const NUM_FIELDS: usize>(
+    ArrayVec<&'a AsciiStr, NUM_FIELDS>,
+);
 
 impl<'a, const NUM_FIELDS: usize> Record<'a, NUM_FIELDS> {
     pub fn get_field(&self, index: usize) -> Option<&'a AsciiStr> {
