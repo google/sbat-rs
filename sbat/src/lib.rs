@@ -69,9 +69,9 @@ extern crate alloc as rust_alloc;
 
 mod component;
 mod csv;
+mod error;
 mod generation;
 mod image;
-mod result;
 mod revocations;
 
 #[cfg(feature = "alloc")]
@@ -81,9 +81,9 @@ mod array;
 pub use array::{ImageSbatArray, RevocationSbatArray};
 pub use component::Component;
 pub use csv::ALLOWED_SPECIAL_CHARS;
+pub use error::Error;
 pub use generation::Generation;
 pub use image::{Entry, ImageSbat, Vendor};
-pub use result::Error;
 pub use revocations::RevocationSbat;
 pub use revocations::ValidationResult;
 pub use ValidationResult::{Allowed, Revoked};
