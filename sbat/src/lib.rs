@@ -32,17 +32,20 @@
 //! # API
 //!
 //! This `no_std` library handles parsing both sources of SBAT data
-//! (image [`Metadata`] and [`Revocations`] data), as well as performing
+//! ([`ImageSbat`] and [`RevocationSbat`] data), as well as performing
 //! the revocation comparison. The parsing starts with raw bytes
 //! containing the CSV; the library doesn't handle directly reading PE
-//! binaries or UEFI variables.
+//! binaries or UEFI variables. Consider using the [`object`] crate to
+//! extract the `.sbat` section from a PE binary.
 //!
-//! # Storage
+//! Two variations of the API are provided:
 //!
-//! The storage for metadata and revocations is represented by
-//! [`Veclike`]. This allows data to be stored in a fixed-sized slice
-//! with [`SliceVec`], or in a [`Vec`] if the `alloc` feature is
-//! enabled.
+//! * The [`ImageSbatArray`] and [`RevocationSbatArray`] types provide
+//!   fixed-size static allocation. Use these if you want to avoid any
+//!   dynamic memory allocation.
+//!
+//! * If the `alloc` feature is enabled, the [`ImageSbatVec`] and
+//!   [`RevocationSbatVec`] types can be used instead.
 //!
 //! # Examples
 //!
@@ -50,9 +53,12 @@
 #![doc = include_str!("../tests/example.rs")]
 //! ```
 //!
-//! [SBAT.md]: https://github.com/rhboot/shim/blob/HEAD/SBAT.md
 //! [SBAT.example.md]: https://github.com/rhboot/shim/blob/HEAD/SBAT.example.md
+//! [SBAT.md]: https://github.com/rhboot/shim/blob/HEAD/SBAT.md
+//! [`ImageSbatVec`]: https://docs.rs/sbat/latest/sbat/struct.ImageSbatVec.html
+//! [`RevocationSbatVec`]: https://docs.rs/sbat/latest/sbat/struct.RevocationSbatVec.html
 //! [`Vec`]: https://doc.rust-lang.org/stable/alloc/vec/struct.Vec.html
+//! [`object`]: https://crates.io/crates/object
 
 #![warn(missing_docs)]
 // Turn off std, except when running tests.
