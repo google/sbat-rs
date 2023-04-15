@@ -59,22 +59,28 @@
 #![cfg_attr(not(test), no_std)]
 
 #[cfg(feature = "alloc")]
-extern crate alloc;
+extern crate alloc as rust_alloc;
 
 mod component;
 mod csv;
 mod generation;
-mod metadata;
+mod image;
 mod result;
 mod revocations;
-mod vec;
 
+#[cfg(feature = "alloc")]
+mod alloc;
+mod array;
+
+pub use array::{ImageSbatArray, RevocationSbatArray};
 pub use component::Component;
 pub use csv::ALLOWED_SPECIAL_CHARS;
 pub use generation::Generation;
-pub use metadata::{Entry, Metadata, Vendor};
+pub use image::{Entry, ImageSbat, Vendor};
 pub use result::{Error, Result};
-pub use revocations::Revocations;
+pub use revocations::RevocationSbat;
 pub use revocations::ValidationResult;
-pub use vec::{SliceVec, Veclike};
 pub use ValidationResult::{Allowed, Revoked};
+
+#[cfg(feature = "alloc")]
+pub use alloc::{ImageSbatVec, RevocationSbatVec};

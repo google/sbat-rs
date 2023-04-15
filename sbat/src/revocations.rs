@@ -12,9 +12,8 @@
 //! documentation for details of how it is used.
 
 use crate::csv::{parse_csv, Record};
-use crate::metadata::{Entry, Metadata};
-use crate::vec::Veclike;
 use crate::{Component, Error, Result};
+use crate::{Entry, ImageSbat};
 use ascii::AsciiStr;
 
 /// The first entry has the component name and generation like the
@@ -24,72 +23,83 @@ const MAX_HEADER_FIELDS: usize = 3;
 /// Whether an image is allowed or revoked.
 #[must_use]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ValidationResult<'r, 'a> {
+pub enum ValidationResult<'a> {
     /// The image has not been revoked.
     Allowed,
 
     /// The image has been revoked. The first revoked entry is provided
     /// (there could be additional revoked components).
-    Revoked(&'r Entry<'a>),
+    Revoked(Entry<'a>),
 }
 
-/// SBAT revocation data.
+/// Trait for revocation SBAT.
 ///
-/// This contains SBAT revocation data parsed from a UEFI variable such
-/// as `SbatLevel`.
-///
-/// See the [crate] documentation for a usage example.
-#[derive(Debug, Eq, PartialEq)]
-pub struct Revocations<'a, Storage>
-where
-    Storage: Veclike<Component<'a>>,
-{
-    date: Option<&'a AsciiStr>,
-    components: Storage,
-}
+/// Typically this data comes from a UEFI variable such as `SbatLevel`.
+pub trait RevocationSbat<'a>: Default {
+    /// Date when the data was last updated. This is optional metadata
+    /// in the first entry and may not be present.
+    fn date(&self) -> Option<&AsciiStr>;
 
-impl<'a, Storage> Revocations<'a, Storage>
-where
-    Storage: Veclike<Component<'a>>,
-{
-    /// Create a new `Revocations` using `components` for
-    /// storage. Existing data in `components` is not cleared. The
-    /// `date` is set to `None`.
-    pub fn new(components: Storage) -> Self {
-        Self {
-            components,
-            date: None,
-        }
-    }
+    /// Set the date when the data was last updated.
+    fn set_date(&mut self, date: Option<&'a AsciiStr>);
+
+    /// Get the revoked components as a slice. The component version
+    /// indicates the lowest *allowed* version of this component; all
+    /// lower versions are considered revoked.
+    fn revoked_components(&self) -> &[Component<'a>];
+
+    /// Add a revoked component.
+    fn try_push(&mut self, component: Component<'a>) -> Result<()>;
 
     /// Parse SBAT data from raw CSV. This data typically comes from a
     /// UEFI variable. Each record is parsed as a [`Component`].
     ///
     /// Any existing data is cleared before parsing.
-    pub fn parse(&mut self, input: &'a [u8]) -> Result<()> {
-        self.components.clear();
+    fn parse(input: &'a [u8]) -> Result<Self> {
+        let mut revocations = Self::default();
 
         let mut first = true;
 
         parse_csv(input, |record: Record<MAX_HEADER_FIELDS>| {
             if first {
-                self.date = record.get_field(2);
+                revocations.set_date(record.get_field(2));
                 first = false;
             }
 
-            self.components.try_push(Component {
+            revocations.try_push(Component {
                 name: record.get_field(0).ok_or(Error::TooFewFields)?,
                 generation: record
                     .get_field_as_generation(1)?
                     .ok_or(Error::TooFewFields)?,
             })
-        })
+        })?;
+
+        Ok(revocations)
     }
 
-    /// Date when the data was last updated. This is optional metadata
-    /// in the first entry and may not be present.
-    pub fn date(&self) -> &Option<&AsciiStr> {
-        &self.date
+    /// Check if any component in `image_sbat` is revoked.
+    ///
+    /// Each component in the image metadata is checked against the
+    /// revocation entries. If the name matches, and if the component's
+    /// version is less than the version in the corresponding revocation
+    /// entry, the component is considered revoked and the image will
+    /// not pass validation. If a component is not in the revocation
+    /// list then it is implicitly allowed.
+    fn validate_image<I: ImageSbat<'a>>(
+        &self,
+        image_sbat: &I,
+    ) -> ValidationResult<'a> {
+        // TODO: move impl to non-generic for code size?
+
+        if let Some(revoked_entry) = image_sbat
+            .entries()
+            .iter()
+            .find(|entry| self.is_component_revoked(&entry.component))
+        {
+            ValidationResult::Revoked(*revoked_entry)
+        } else {
+            ValidationResult::Allowed
+        }
     }
 
     /// Check if the `input` [`Component`] is revoked.
@@ -101,53 +111,18 @@ where
     /// the `input` is not in the revocation list then it is implicitly
     /// allowed.
     #[must_use]
-    pub fn is_component_revoked(&self, input: &Component) -> bool {
-        self.components.as_slice().iter().any(|revoked_component| {
+    fn is_component_revoked(&self, input: &Component) -> bool {
+        self.revoked_components().iter().any(|revoked_component| {
             input.name == revoked_component.name
                 && input.generation < revoked_component.generation
         })
-    }
-
-    /// Check if any component in `metadata` is revoked.
-    ///
-    /// Each component in the image metadata is checked against the
-    /// revocation entries. If the name matches, and if the component's
-    /// version is less than the version in the corresponding revocation
-    /// entry, the component is considered revoked and the image will
-    /// not pass validation. If a component is not in the revocation
-    /// list then it is implicitly allowed.
-    pub fn validate_metadata<'r, 'b, MetadataStorage>(
-        &self,
-        metadata: &'r Metadata<'b, MetadataStorage>,
-    ) -> ValidationResult<'r, 'b>
-    where
-        MetadataStorage: Veclike<Entry<'b>>,
-    {
-        if let Some(revoked_entry) = metadata
-            .entries()
-            .iter()
-            .find(|entry| self.is_component_revoked(&entry.component))
-        {
-            ValidationResult::Revoked(revoked_entry)
-        } else {
-            ValidationResult::Allowed
-        }
-    }
-
-    /// Get the revoked components as a slice. The component version
-    /// indicates the lowest *allowed* version of this component; all
-    /// lower versions are considered revoked.
-    pub fn revoked_components(&self) -> &[Component<'a>] {
-        self.components.as_slice()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::metadata::Vendor;
-    use crate::Generation;
-    use arrayvec::ArrayVec;
+    use crate::{Generation, ImageSbatArray, RevocationSbatArray, Vendor};
 
     fn ascii(s: &str) -> &AsciiStr {
         AsciiStr::from_ascii(s).unwrap()
@@ -163,35 +138,36 @@ mod tests {
 
     fn make_metadata<'a>(
         components: &'a [Component<'a>],
-    ) -> Metadata<'a, ArrayVec<Entry<'a>, 10>> {
-        let mut entries = ArrayVec::<_, 10>::new();
+    ) -> ImageSbatArray<'a, 10> {
+        let mut image_sbat = ImageSbatArray::new();
         for comp in components {
-            entries.push(Entry::new(comp.clone(), Vendor::default()));
+            image_sbat
+                .try_push(Entry::new(comp.clone(), Vendor::default()))
+                .unwrap();
         }
 
-        Metadata::new(entries)
+        image_sbat
     }
 
     fn make_revocations<'a, 'b>(
         data: &'a [Component<'b>],
-    ) -> Revocations<'b, ArrayVec<Component<'b>, 10>> {
-        let mut revocations = ArrayVec::<_, 10>::new();
+    ) -> RevocationSbatArray<'b, 10> {
+        let mut revocations = RevocationSbatArray::new();
+
         for elem in data {
-            revocations.push(elem.clone());
+            revocations.try_push(elem.clone()).unwrap();
         }
 
-        Revocations::new(revocations)
+        revocations
     }
 
     #[test]
     fn parse_success() {
         let input = b"sbat,1,2021030218\ncompA,1\ncompB,2";
 
-        let array = ArrayVec::<_, 3>::new();
-        let mut revocations = Revocations::new(array);
-        revocations.parse(input).unwrap();
+        let revocations = RevocationSbatArray::<3>::parse(input).unwrap();
 
-        assert_eq!(revocations.date, Some(ascii("2021030218")));
+        assert_eq!(revocations.date(), Some(ascii("2021030218")));
 
         assert_eq!(
             revocations.revoked_components(),
@@ -207,20 +183,19 @@ mod tests {
     fn too_few_fields() {
         let input = b"sbat";
 
-        let array = ArrayVec::<_, 2>::new();
-        let mut revocations = Revocations::new(array);
-        assert_eq!(revocations.parse(input), Err(Error::TooFewFields));
+        assert_eq!(
+            RevocationSbatArray::<2>::parse(input),
+            Err(Error::TooFewFields)
+        );
     }
 
     #[test]
     fn no_date_field() {
         let input = b"sbat,1";
 
-        let array = ArrayVec::<_, 1>::new();
-        let mut revocations = Revocations::new(array);
-        revocations.parse(input).unwrap();
+        let revocations = RevocationSbatArray::<2>::parse(input).unwrap();
 
-        assert!(revocations.date.is_none());
+        assert!(revocations.date().is_none());
 
         assert_eq!(
             revocations.revoked_components(),
@@ -252,7 +227,7 @@ mod tests {
     }
 
     #[test]
-    fn validate_metadata() {
+    fn validate_image() {
         use ValidationResult::{Allowed, Revoked};
 
         let revocations = make_revocations(&[
@@ -262,33 +237,32 @@ mod tests {
 
         // Invalid component.
         assert_eq!(
-            revocations.validate_metadata(&make_metadata(&[make_component(
-                "compA", 1
-            )])),
-            Revoked(&make_entry("compA", 1))
+            revocations
+                .validate_image(&make_metadata(&[make_component("compA", 1)])),
+            Revoked(make_entry("compA", 1))
         );
 
         // compA valid, compB invalid.
         assert_eq!(
-            revocations.validate_metadata(&make_metadata(&[
+            revocations.validate_image(&make_metadata(&[
                 make_component("compA", 2),
                 make_component("compB", 2),
             ])),
-            Revoked(&make_entry("compB", 2))
+            Revoked(make_entry("compB", 2))
         );
 
         // compA invalid, compB valid.
         assert_eq!(
-            revocations.validate_metadata(&make_metadata(&[
+            revocations.validate_image(&make_metadata(&[
                 make_component("compA", 1),
                 make_component("compB", 3),
             ])),
-            Revoked(&make_entry("compA", 1))
+            Revoked(make_entry("compA", 1))
         );
 
         // compA valid, compB valid.
         assert_eq!(
-            revocations.validate_metadata(&make_metadata(&[
+            revocations.validate_image(&make_metadata(&[
                 make_component("compA", 2),
                 make_component("compB", 3),
             ])),
@@ -297,36 +271,18 @@ mod tests {
 
         // compC valid.
         assert_eq!(
-            revocations.validate_metadata(&make_metadata(&[make_component(
-                "compC", 1
-            )])),
+            revocations
+                .validate_image(&make_metadata(&[make_component("compC", 1)])),
             Allowed
         );
 
         // compC valid, compA invalid.
         assert_eq!(
-            revocations.validate_metadata(&make_metadata(&[
+            revocations.validate_image(&make_metadata(&[
                 make_component("compC", 1),
                 make_component("compA", 1)
             ])),
-            Revoked(&make_entry("compA", 1))
+            Revoked(make_entry("compA", 1))
         );
-    }
-
-    /// Test that `Revocations::new` does not clear the storage, and test
-    /// that `Revocations::parse` does clear the storage.
-    #[test]
-    fn storage_clear() {
-        let mut array = ArrayVec::<_, 2>::new();
-        array.push(Component::default());
-
-        // Initially the input storage has one component, which should stay
-        // true after calling `new`.
-        let mut revocations = Revocations::new(array);
-        assert_eq!(revocations.revoked_components().len(), 1);
-
-        // Calling parse should clear out the existing data.
-        revocations.parse(b"").unwrap();
-        assert!(revocations.revoked_components().is_empty());
     }
 }

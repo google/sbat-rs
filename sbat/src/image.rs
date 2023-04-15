@@ -13,10 +13,8 @@
 //! used.
 
 use crate::csv::{parse_csv, Record};
-use crate::vec::Veclike;
 use crate::{Component, Error, Result};
 use ascii::AsciiStr;
-use core::marker::PhantomData;
 
 /// Vendor data. This is optional human-readable data that is not used
 /// for SBAT comparison.
@@ -57,43 +55,19 @@ impl<'a> Entry<'a> {
     }
 }
 
-/// Image SBAT metadata.
+/// Trait for image SBAT metadata.
 ///
-/// This contains SBAT entries parsed from the `.sbat` section of a UEFI
-/// PE executable.
-///
-/// See the [crate] documentation for a usage example.
-#[derive(Debug, Eq, PartialEq)]
-pub struct Metadata<'a, Storage: Veclike<Entry<'a>>> {
-    entries: Storage,
-
-    /// This is needed for the otherwise-unused 'a lifetime.
-    _phantom: PhantomData<Entry<'a>>,
-}
-
-impl<'a, Storage> Metadata<'a, Storage>
-where
-    Storage: Veclike<Entry<'a>>,
-{
-    /// Create a new `Metadata` using `entries` for storage. Existing
-    /// data in `entries` is not cleared.
-    pub fn new(entries: Storage) -> Self {
-        Self {
-            entries,
-            _phantom: Default::default(),
-        }
-    }
-
+/// Typically this data comes from the `.sbat` section of a UEFI PE
+/// executable.
+pub trait ImageSbat<'a>: Default {
     /// Parse SBAT metadata from raw CSV. This data typically comes from
     /// the `.sbat` section of a UEFI PE executable. Each record is
     /// parsed as an [`Entry`].
-    ///
-    /// Any existing data is cleared before parsing.
-    pub fn parse(&mut self, input: &'a [u8]) -> Result<()> {
-        self.entries.clear();
+    fn parse(input: &'a [u8]) -> Result<Self> {
+        let mut sbat = Self::default();
 
         parse_csv(input, |record: Record<{ Entry::NUM_FIELDS }>| {
-            self.entries.try_push(Entry::new(
+            sbat.try_push(Entry::new(
                 Component {
                     name: record.get_field(0).ok_or(Error::TooFewFields)?,
                     generation: record
@@ -107,29 +81,30 @@ where
                     url: record.get_field(5),
                 },
             ))
-        })
+        })?;
+
+        Ok(sbat)
     }
 
     /// Get the SBAT entries.
-    pub fn entries(&self) -> &[Entry<'a>] {
-        self.entries.as_slice()
-    }
+    fn entries(&self) -> &[Entry<'a>];
+
+    /// Add an SBAT entry.
+    fn try_push(&mut self, entry: Entry<'a>) -> Result<()>;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Generation;
-    use arrayvec::ArrayVec;
+    #[cfg(feature = "alloc")]
+    use crate::ImageSbatVec;
+    use crate::{Generation, ImageSbatArray};
 
-    #[test]
-    fn parse_success() {
+    fn parse_success_helper<'a, I: ImageSbat<'a>>() {
         // The current value of the SBAT data in the shim repo.
         let shim_sbat = b"sbat,1,SBAT Version,sbat,1,https://github.com/rhboot/shim/blob/main/SBAT.md
 shim,1,UEFI shim,shim,1,https://github.com/rhboot/shim";
-        let array = ArrayVec::<_, 2>::new();
-        let mut metadata = Metadata::new(array);
-        metadata.parse(shim_sbat).unwrap();
+        let metadata = I::parse(shim_sbat).unwrap();
 
         let ascii = |s| AsciiStr::from_ascii(s).unwrap();
 
@@ -167,26 +142,24 @@ shim,1,UEFI shim,shim,1,https://github.com/rhboot/shim";
     }
 
     #[test]
-    fn invalid_record() {
-        let array = ArrayVec::<_, 2>::new();
-        let mut metadata = Metadata::new(array);
-        assert_eq!(metadata.parse(b"a"), Err(Error::TooFewFields));
+    fn parse_success_array() {
+        parse_success_helper::<ImageSbatArray<2>>();
     }
 
-    /// Test that `Metadata::new` does not clear the storage, and test
-    /// that `Metadata::parse` does clear the storage.
+    #[cfg(feature = "alloc")]
     #[test]
-    fn storage_clear() {
-        let mut array = ArrayVec::<_, 2>::new();
-        array.push(Entry::default());
+    fn parse_success_vec() {
+        parse_success_helper::<ImageSbatVec>();
+    }
 
-        // Initially the input storage has one entry, which should stay
-        // true after calling `new`.
-        let mut metadata = Metadata::new(array);
-        assert_eq!(metadata.entries().len(), 1);
+    #[test]
+    fn invalid_record_array() {
+        assert_eq!(ImageSbatArray::<2>::parse(b"a"), Err(Error::TooFewFields));
+    }
 
-        // Calling parse should clear out the existing data.
-        metadata.parse(b"").unwrap();
-        assert!(metadata.entries().is_empty());
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn invalid_record_vec() {
+        assert_eq!(ImageSbatVec::parse(b"a"), Err(Error::TooFewFields));
     }
 }

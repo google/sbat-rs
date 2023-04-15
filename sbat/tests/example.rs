@@ -7,39 +7,35 @@
 // except according to those terms.
 
 use sbat::{
-    Component, Entry, Metadata, Result, Revocations, SliceVec, ValidationResult,
+    ImageSbat, ImageSbatArray, Result, RevocationSbat, RevocationSbatArray,
+    ValidationResult,
 };
 
 #[test]
 fn example() -> Result<()> {
-    // Allocate storage for the metadata and revocations. For this
-    // example we use a fixed-size slice. If the `alloc` feature is
-    // enabled, a `Vec` can be used instead.
-    let mut metadata_storage: [Entry; 10] = Default::default();
-    let metadata_storage = SliceVec::new(&mut metadata_storage);
-    let mut revocation_storage: [Component; 10] = Default::default();
-    let revocation_storage = SliceVec::new(&mut revocation_storage);
+    // This example uses fixed-size array types that do not allocate. If
+    // the `alloc` feature is enabled, you can use `ImageSbatVec` and
+    // `RevocationSbatVec` instead.
 
-    // Parse the metadata CSV.
-    let mut metadata = Metadata::new(metadata_storage);
-    metadata.parse(b"sbat,1,CompA,2")?;
+    // Parse the image SBAT.
+    let image_sbat = ImageSbatArray::<10>::parse(b"sbat,1,CompA,2")?;
 
-    // Parse the revocations CSV.
-    let mut revocations = Revocations::new(revocation_storage);
-    revocations.parse(b"sbat,1,2021030218\nCompA,2")?;
+    // Parse the revocations SBAT.
+    let revocations =
+        RevocationSbatArray::<10>::parse(b"sbat,1,2021030218\nCompA,2")?;
 
-    // Check that the metadata is not revoked.
+    // Check that the image is not revoked.
     assert_eq!(
-        revocations.validate_metadata(&metadata),
+        revocations.validate_image(&image_sbat),
         ValidationResult::Allowed,
     );
 
-    // Change the metadata's CompA generation to 1 and verify that it is
+    // Change the image's CompA generation to 1 and verify that it is
     // revoked.
-    metadata.parse(b"sbat,1\nCompA,1")?;
+    let image_sbat = ImageSbatArray::<10>::parse(b"sbat,1\nCompA,1")?;
     assert_eq!(
-        revocations.validate_metadata(&metadata),
-        ValidationResult::Revoked(metadata.entries().last().unwrap()),
+        revocations.validate_image(&image_sbat),
+        ValidationResult::Revoked(*image_sbat.entries().last().unwrap()),
     );
 
     Ok(())
