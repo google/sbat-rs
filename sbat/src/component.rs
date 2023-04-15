@@ -12,7 +12,7 @@ use ascii::AsciiStr;
 /// SBAT component. This is the machine-readable portion of SBAT that is
 /// actually used for revocation (other fields are human-readable and
 /// not used for comparisons).
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct Component<'a> {
     /// Component name.
     pub name: &'a AsciiStr,
