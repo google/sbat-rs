@@ -9,8 +9,10 @@
 //! This file tests the SBAT library using the examples from:
 //! <https://github.com/rhboot/shim/blob/899314b90113abaaa4b22cd1d82a0fcb2a971850/SBAT.example.md>
 
-use arrayvec::ArrayVec;
-use sbat::{Allowed, Metadata, Revocations, Revoked};
+use sbat::{
+    Allowed, ImageSbat, ImageSbatArray, RevocationSbat, RevocationSbatArray,
+    Revoked,
+};
 
 // Initial data.
 
@@ -197,28 +199,20 @@ fn bug2() {
 }
 
 fn assert_revoked(revocations_csv: &[u8], metadata_csv: &[u8]) {
-    let array = ArrayVec::<_, 10>::new();
-    let mut revocations = Revocations::new(array);
-    revocations.parse(revocations_csv).unwrap();
-
-    let array = ArrayVec::<_, 10>::new();
-    let mut metadata = Metadata::new(array);
-    metadata.parse(metadata_csv).unwrap();
+    let revocations =
+        RevocationSbatArray::<10>::parse(revocations_csv).unwrap();
+    let image_sbat = ImageSbatArray::<10>::parse(metadata_csv).unwrap();
 
     assert!(matches!(
-        revocations.validate_metadata(&metadata),
+        revocations.validate_image(&image_sbat),
         Revoked(_)
     ));
 }
 
 fn assert_allowed(revocations_csv: &[u8], metadata_csv: &[u8]) {
-    let array = ArrayVec::<_, 10>::new();
-    let mut revocations = Revocations::new(array);
-    revocations.parse(revocations_csv).unwrap();
+    let revocations =
+        RevocationSbatArray::<10>::parse(revocations_csv).unwrap();
+    let image_sbat = ImageSbatArray::<10>::parse(metadata_csv).unwrap();
 
-    let array = ArrayVec::<_, 10>::new();
-    let mut metadata = Metadata::new(array);
-    metadata.parse(metadata_csv).unwrap();
-
-    assert_eq!(revocations.validate_metadata(&metadata), Allowed);
+    assert_eq!(revocations.validate_image(&image_sbat), Allowed);
 }
