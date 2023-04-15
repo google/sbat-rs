@@ -7,9 +7,11 @@
 // except according to those terms.
 
 use anyhow::{anyhow, Result};
+use ascii::AsciiStr;
 use clap::{Parser, Subcommand};
 use fs_err as fs;
 use object::{Object, ObjectSection};
+use sbat::{ImageSbat, ImageSbatVec};
 use std::path::{Path, PathBuf};
 
 /// Tool for working with SBAT (UEFI Secure Boot Advanced Targeting).
@@ -54,7 +56,38 @@ fn dump_sbat(input: &Path) -> Result<()> {
     Ok(())
 }
 
-fn validate_sbat(_input: &Path) -> Result<()> {
+fn validate_sbat(input: &Path) -> Result<()> {
+    let data = read_sbat_section(input)?;
+    // TODO: add std error support.
+    let image_sbat = ImageSbatVec::parse(&data).unwrap();
+
+    let mut builder = tabled::builder::Builder::default();
+    builder.set_header([
+        "component",
+        "gen",
+        "vendor",
+        "package",
+        "version",
+        "url",
+    ]);
+    for entry in image_sbat.entries() {
+        let component = entry.component;
+        let vendor = entry.vendor;
+        let opt_ascii_to_string = |opt: Option<&AsciiStr>| {
+            opt.map(|s| s.to_string()).unwrap_or_default()
+        };
+        builder.push_record([
+            component.name.to_string(),
+            component.generation.to_string(),
+            opt_ascii_to_string(vendor.name),
+            opt_ascii_to_string(vendor.package_name),
+            opt_ascii_to_string(vendor.version),
+            opt_ascii_to_string(vendor.url),
+        ]);
+    }
+
+    println!("{}", builder.build());
+
     Ok(())
 }
 
