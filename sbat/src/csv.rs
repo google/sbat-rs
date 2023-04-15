@@ -24,7 +24,7 @@
 //!   first two fields in each line as human-readable comments, so
 //!   dropping the data is OK.
 
-use crate::{Error, Generation, Result};
+use crate::{Error, Generation};
 use arrayvec::ArrayVec;
 use ascii::{AsciiChar, AsciiStr};
 use log::warn;
@@ -69,9 +69,9 @@ fn is_char_allowed_in_field(chr: AsciiChar) -> bool {
 pub fn parse_csv<'a, Func, const NUM_FIELDS: usize>(
     input: &'a [u8],
     mut func: Func,
-) -> Result<()>
+) -> Result<(), Error>
 where
-    Func: FnMut(Record<'a, NUM_FIELDS>) -> Result<()>,
+    Func: FnMut(Record<'a, NUM_FIELDS>) -> Result<(), Error>,
 {
     let input = AsciiStr::from_ascii(input).map_err(|_| Error::InvalidAscii)?;
 
@@ -117,7 +117,7 @@ impl<'a, const NUM_FIELDS: usize> Record<'a, NUM_FIELDS> {
     pub fn get_field_as_generation(
         &self,
         index: usize,
-    ) -> Result<Option<Generation>> {
+    ) -> Result<Option<Generation>, Error> {
         if let Some(ascii) = self.get_field(index) {
             Ok(Some(Generation::from_ascii(ascii)?))
         } else {
@@ -140,7 +140,7 @@ impl<'a, const NUM_FIELDS: usize> Record<'a, NUM_FIELDS> {
 mod tests {
     use super::*;
 
-    fn parse_simple<'a>(s: &'a str) -> Result<Vec<Vec<String>>> {
+    fn parse_simple<'a>(s: &'a str) -> Result<Vec<Vec<String>>, Error> {
         const NUM_FIELDS: usize = 3;
         let mut output = Vec::new();
         parse_csv(s.as_bytes(), |record: Record<NUM_FIELDS>| {

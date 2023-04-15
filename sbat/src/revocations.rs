@@ -12,7 +12,7 @@
 //! documentation for details of how it is used.
 
 use crate::csv::{parse_csv, Record};
-use crate::{Component, Error, Result};
+use crate::{Component, Error};
 use crate::{Entry, ImageSbat};
 use ascii::AsciiStr;
 
@@ -49,13 +49,13 @@ pub trait RevocationSbat<'a>: Default {
     fn revoked_components(&self) -> &[Component<'a>];
 
     /// Add a revoked component.
-    fn try_push(&mut self, component: Component<'a>) -> Result<()>;
+    fn try_push(&mut self, component: Component<'a>) -> Result<(), Error>;
 
     /// Parse SBAT data from raw CSV. This data typically comes from a
     /// UEFI variable. Each record is parsed as a [`Component`].
     ///
     /// Any existing data is cleared before parsing.
-    fn parse(input: &'a [u8]) -> Result<Self> {
+    fn parse(input: &'a [u8]) -> Result<Self, Error> {
         let mut revocations = Self::default();
 
         let mut first = true;

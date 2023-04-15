@@ -13,7 +13,7 @@
 //! used.
 
 use crate::csv::{parse_csv, Record};
-use crate::{Component, Error, Result};
+use crate::{Component, Error};
 use ascii::AsciiStr;
 
 /// Vendor data. This is optional human-readable data that is not used
@@ -63,7 +63,7 @@ pub trait ImageSbat<'a>: Default {
     /// Parse SBAT metadata from raw CSV. This data typically comes from
     /// the `.sbat` section of a UEFI PE executable. Each record is
     /// parsed as an [`Entry`].
-    fn parse(input: &'a [u8]) -> Result<Self> {
+    fn parse(input: &'a [u8]) -> Result<Self, Error> {
         let mut sbat = Self::default();
 
         parse_csv(input, |record: Record<{ Entry::NUM_FIELDS }>| {
@@ -90,7 +90,7 @@ pub trait ImageSbat<'a>: Default {
     fn entries(&self) -> &[Entry<'a>];
 
     /// Add an SBAT entry.
-    fn try_push(&mut self, entry: Entry<'a>) -> Result<()>;
+    fn try_push(&mut self, entry: Entry<'a>) -> Result<(), Error>;
 }
 
 #[cfg(test)]
