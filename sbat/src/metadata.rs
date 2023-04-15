@@ -20,7 +20,7 @@ use core::marker::PhantomData;
 
 /// Vendor data. This is optional human-readable data that is not used
 /// for SBAT comparison.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct Vendor<'a> {
     /// Human-readable vendor name.
     pub name: Option<&'a AsciiStr>,
@@ -38,7 +38,7 @@ pub struct Vendor<'a> {
 /// Entry in image SBAT metadata. This contains a [`Component`], which
 /// is what gets used for revocation comparisons, as well as [`Vendor`]
 /// data, which is extra data that serves as a human-readable comment.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct Entry<'a> {
     /// Component data. This is used for SBAT comparison.
     pub component: Component<'a>,
