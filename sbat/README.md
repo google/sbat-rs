@@ -99,12 +99,6 @@ Whereas this would not be allowed due to the `pizza` component:
     pizza,1,
     pizza.somecorp,2
 
-## API
-
-See the crate documentation:
-
-    cargo doc -p sbat --all-features --open
-    
 ## License
 
 Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE)
