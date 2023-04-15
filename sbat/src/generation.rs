@@ -8,6 +8,7 @@
 
 use crate::{Error, Result};
 use ascii::AsciiStr;
+use core::fmt::{self, Display, Formatter};
 use core::str::FromStr;
 
 /// SBAT component generation.
@@ -39,5 +40,16 @@ impl Generation {
         let val =
             u32::from_str(s.as_str()).map_err(|_| Error::InvalidGeneration)?;
         Self::new(val)
+    }
+
+    /// Get the generation value as a [`u32`].
+    pub fn to_u32(self) -> u32 {
+        self.0
+    }
+}
+
+impl Display for Generation {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
