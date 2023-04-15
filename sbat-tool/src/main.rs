@@ -35,7 +35,7 @@ enum Action {
     Dump { input: PathBuf },
 
     /// Validate and pretty-print the '.sbat' section of a PE executable.
-    Validate { input: PathBuf },
+    Validate { input: Vec<PathBuf> },
 }
 
 fn read_sbat_section(input: &Path) -> Result<Vec<u8>> {
@@ -56,37 +56,47 @@ fn dump_sbat(input: &Path) -> Result<()> {
     Ok(())
 }
 
-fn validate_sbat(input: &Path) -> Result<()> {
-    let data = read_sbat_section(input)?;
-    // TODO: add std error support.
-    let image_sbat = ImageSbatVec::parse(&data).unwrap();
+fn validate_sbat(inputs: &Vec<PathBuf>) -> Result<()> {
+    let mut first = true;
+    for input in inputs {
+        if first {
+            first = false;
+        } else {
+            println!();
+        }
+        println!("{}:", input.display());
 
-    let mut builder = tabled::builder::Builder::default();
-    builder.set_header([
-        "component",
-        "gen",
-        "vendor",
-        "package",
-        "version",
-        "url",
-    ]);
-    for entry in image_sbat.entries() {
-        let component = entry.component;
-        let vendor = entry.vendor;
-        let opt_ascii_to_string = |opt: Option<&AsciiStr>| {
-            opt.map(|s| s.to_string()).unwrap_or_default()
-        };
-        builder.push_record([
-            component.name.to_string(),
-            component.generation.to_string(),
-            opt_ascii_to_string(vendor.name),
-            opt_ascii_to_string(vendor.package_name),
-            opt_ascii_to_string(vendor.version),
-            opt_ascii_to_string(vendor.url),
+        let data = read_sbat_section(input)?;
+        // TODO: add std error support.
+        let image_sbat = ImageSbatVec::parse(&data).unwrap();
+
+        let mut builder = tabled::builder::Builder::default();
+        builder.set_header([
+            "component",
+            "gen",
+            "vendor",
+            "package",
+            "version",
+            "url",
         ]);
-    }
+        for entry in image_sbat.entries() {
+            let component = entry.component;
+            let vendor = entry.vendor;
+            let opt_ascii_to_string = |opt: Option<&AsciiStr>| {
+                opt.map(|s| s.to_string()).unwrap_or_default()
+            };
+            builder.push_record([
+                component.name.to_string(),
+                component.generation.to_string(),
+                opt_ascii_to_string(vendor.name),
+                opt_ascii_to_string(vendor.package_name),
+                opt_ascii_to_string(vendor.version),
+                opt_ascii_to_string(vendor.url),
+            ]);
+        }
 
-    println!("{}", builder.build());
+        println!("{}", builder.build());
+    }
 
     Ok(())
 }
