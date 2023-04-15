@@ -1,7 +1,15 @@
 # sbat-tool
 
+[![Crates.io](https://img.shields.io/crates/v/sbat-tool)](https://crates.io/crates/sbat-tool)
+
 This is a tool for working with [SBAT][SBAT.md]. Currently it only
 supports one operation: dumping the '.sbat' section of a PE executable.
+
+Install with:
+
+```console
+cargo install sbat-tool
+```
 
 ## License
 

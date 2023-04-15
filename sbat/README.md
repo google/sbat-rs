@@ -1,5 +1,8 @@
 # sbat
 
+[![Crates.io](https://img.shields.io/crates/v/sbat)](https://crates.io/crates/sbat)
+[![Docs.rs](https://docs.rs/sbat/badge.svg)](https://docs.rs/sbat)
+
 This no-std library handles [SBAT][SBAT.md] parsing and SBAT revocation
 checks.
 
