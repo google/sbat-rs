@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::{Component, Entry, Error, ImageSbat, RevocationSbat};
+use crate::{Component, Entry, ImageSbat, PushError, RevocationSbat};
 use arrayvec::ArrayVec;
 use ascii::AsciiStr;
 
@@ -31,8 +31,8 @@ impl<'a, const N: usize> ImageSbat<'a> for ImageSbatArray<'a, N> {
         &self.0
     }
 
-    fn try_push(&mut self, entry: Entry<'a>) -> Result<(), Error> {
-        self.0.try_push(entry).map_err(|_| Error::TooManyRecords)
+    fn try_push(&mut self, entry: Entry<'a>) -> Result<(), PushError> {
+        self.0.try_push(entry).map_err(|_| PushError)
     }
 }
 
@@ -68,9 +68,7 @@ impl<'a, const N: usize> RevocationSbat<'a> for RevocationSbatArray<'a, N> {
         &self.components
     }
 
-    fn try_push(&mut self, component: Component<'a>) -> Result<(), Error> {
-        self.components
-            .try_push(component)
-            .map_err(|_| Error::TooManyRecords)
+    fn try_push(&mut self, component: Component<'a>) -> Result<(), PushError> {
+        self.components.try_push(component).map_err(|_| PushError)
     }
 }

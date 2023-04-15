@@ -12,7 +12,7 @@
 //! documentation for details of how it is used.
 
 use crate::csv::{parse_csv, Record};
-use crate::{Component, Error};
+use crate::{Component, ParseError, PushError};
 use crate::{Entry, ImageSbat};
 use ascii::AsciiStr;
 
@@ -49,13 +49,13 @@ pub trait RevocationSbat<'a>: Default {
     fn revoked_components(&self) -> &[Component<'a>];
 
     /// Add a revoked component.
-    fn try_push(&mut self, component: Component<'a>) -> Result<(), Error>;
+    fn try_push(&mut self, component: Component<'a>) -> Result<(), PushError>;
 
     /// Parse SBAT data from raw CSV. This data typically comes from a
     /// UEFI variable. Each record is parsed as a [`Component`].
     ///
     /// Any existing data is cleared before parsing.
-    fn parse(input: &'a [u8]) -> Result<Self, Error> {
+    fn parse(input: &'a [u8]) -> Result<Self, ParseError> {
         let mut revocations = Self::default();
 
         let mut first = true;
@@ -66,12 +66,16 @@ pub trait RevocationSbat<'a>: Default {
                 first = false;
             }
 
-            revocations.try_push(Component {
-                name: record.get_field(0).ok_or(Error::TooFewFields)?,
-                generation: record
-                    .get_field_as_generation(1)?
-                    .ok_or(Error::TooFewFields)?,
-            })
+            revocations
+                .try_push(Component {
+                    name: record
+                        .get_field(0)
+                        .ok_or(ParseError::TooFewFields)?,
+                    generation: record
+                        .get_field_as_generation(1)?
+                        .ok_or(ParseError::TooFewFields)?,
+                })
+                .map_err(|_| ParseError::TooManyRecords)
         })?;
 
         Ok(revocations)
@@ -185,7 +189,7 @@ mod tests {
 
         assert_eq!(
             RevocationSbatArray::<2>::parse(input),
-            Err(Error::TooFewFields)
+            Err(ParseError::TooFewFields)
         );
     }
 

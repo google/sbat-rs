@@ -7,12 +7,12 @@
 // except according to those terms.
 
 use sbat::{
-    Error, ImageSbat, ImageSbatArray, RevocationSbat, RevocationSbatArray,
+    ImageSbat, ImageSbatArray, ParseError, RevocationSbat, RevocationSbatArray,
     ValidationResult,
 };
 
 #[test]
-fn example() -> Result<(), Error> {
+fn example() -> Result<(), ParseError> {
     // This example uses fixed-size array types that do not allocate. If
     // the `alloc` feature is enabled, you can use `ImageSbatVec` and
     // `RevocationSbatVec` instead.

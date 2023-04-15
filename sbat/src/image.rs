@@ -13,7 +13,7 @@
 //! used.
 
 use crate::csv::{parse_csv, Record};
-use crate::{Component, Error};
+use crate::{Component, ParseError, PushError};
 use ascii::AsciiStr;
 
 /// Vendor data. This is optional human-readable data that is not used
@@ -63,16 +63,18 @@ pub trait ImageSbat<'a>: Default {
     /// Parse SBAT metadata from raw CSV. This data typically comes from
     /// the `.sbat` section of a UEFI PE executable. Each record is
     /// parsed as an [`Entry`].
-    fn parse(input: &'a [u8]) -> Result<Self, Error> {
+    fn parse(input: &'a [u8]) -> Result<Self, ParseError> {
         let mut sbat = Self::default();
 
         parse_csv(input, |record: Record<{ Entry::NUM_FIELDS }>| {
             sbat.try_push(Entry::new(
                 Component {
-                    name: record.get_field(0).ok_or(Error::TooFewFields)?,
+                    name: record
+                        .get_field(0)
+                        .ok_or(ParseError::TooFewFields)?,
                     generation: record
                         .get_field_as_generation(1)?
-                        .ok_or(Error::TooFewFields)?,
+                        .ok_or(ParseError::TooFewFields)?,
                 },
                 Vendor {
                     name: record.get_field(2),
@@ -81,6 +83,7 @@ pub trait ImageSbat<'a>: Default {
                     url: record.get_field(5),
                 },
             ))
+            .map_err(|_| ParseError::TooManyRecords)
         })?;
 
         Ok(sbat)
@@ -90,7 +93,7 @@ pub trait ImageSbat<'a>: Default {
     fn entries(&self) -> &[Entry<'a>];
 
     /// Add an SBAT entry.
-    fn try_push(&mut self, entry: Entry<'a>) -> Result<(), Error>;
+    fn try_push(&mut self, entry: Entry<'a>) -> Result<(), PushError>;
 }
 
 #[cfg(test)]
@@ -154,12 +157,15 @@ shim,1,UEFI shim,shim,1,https://github.com/rhboot/shim";
 
     #[test]
     fn invalid_record_array() {
-        assert_eq!(ImageSbatArray::<2>::parse(b"a"), Err(Error::TooFewFields));
+        assert_eq!(
+            ImageSbatArray::<2>::parse(b"a"),
+            Err(ParseError::TooFewFields)
+        );
     }
 
     #[cfg(feature = "alloc")]
     #[test]
     fn invalid_record_vec() {
-        assert_eq!(ImageSbatVec::parse(b"a"), Err(Error::TooFewFields));
+        assert_eq!(ImageSbatVec::parse(b"a"), Err(ParseError::TooFewFields));
     }
 }
