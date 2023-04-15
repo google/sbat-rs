@@ -18,13 +18,21 @@ jobs:
       - uses: Swatinem/rust-cache@v1
       - run: cargo check
 
-  test:
+  test-sbat:
     name: Test Suite
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: Swatinem/rust-cache@v1
-      - run: cargo test
+      - run: cargo test -p sbat
+
+  test-sbat-alloc:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v1
+      - run: cargo test -p sbat -F alloc
 
   fmt:
     name: Rustfmt
