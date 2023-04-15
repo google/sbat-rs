@@ -19,6 +19,7 @@ repository = "https://github.com/google/sbat-rs"
 
 [dependencies]
 anyhow = "1.0.70"
+ascii = { version = "1.1.0", default-features = false }
 clap = { version = "4.2.1", features = ["derive"] }
 fs-err = "2.9.0"
 object = { version = "0.30.3", default-features = false, features = ["pe", "read", "std"] }
