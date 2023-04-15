@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::{Component, Entry, ImageSbat, Result, RevocationSbat};
+use crate::{Component, Entry, Error, ImageSbat, RevocationSbat};
 use ascii::AsciiStr;
 use rust_alloc::vec::Vec;
 
@@ -36,7 +36,7 @@ impl<'a> ImageSbat<'a> for ImageSbatVec<'a> {
         &self.0
     }
 
-    fn try_push(&mut self, entry: Entry<'a>) -> Result<()> {
+    fn try_push(&mut self, entry: Entry<'a>) -> Result<(), Error> {
         self.push(entry);
         Ok(())
     }
@@ -79,7 +79,7 @@ impl<'a> RevocationSbat<'a> for RevocationSbatVec<'a> {
         &self.components
     }
 
-    fn try_push(&mut self, component: Component<'a>) -> Result<()> {
+    fn try_push(&mut self, component: Component<'a>) -> Result<(), Error> {
         self.push(component);
         Ok(())
     }

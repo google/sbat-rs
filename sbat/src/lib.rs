@@ -83,7 +83,7 @@ pub use component::Component;
 pub use csv::ALLOWED_SPECIAL_CHARS;
 pub use generation::Generation;
 pub use image::{Entry, ImageSbat, Vendor};
-pub use result::{Error, Result};
+pub use result::Error;
 pub use revocations::RevocationSbat;
 pub use revocations::ValidationResult;
 pub use ValidationResult::{Allowed, Revoked};

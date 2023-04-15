@@ -34,8 +34,3 @@ pub enum Error {
     /// CSV record has too few fields.
     TooFewFields,
 }
-
-/// SBAT [`Result`] type alias.
-///
-/// [`Result`]: `core::result::Result`
-pub type Result<T> = core::result::Result<T, Error>;
