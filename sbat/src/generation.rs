@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::Error;
+use crate::ParseError;
 use ascii::AsciiStr;
 use core::fmt::{self, Display, Formatter};
 use core::str::FromStr;
@@ -27,18 +27,18 @@ impl Default for Generation {
 impl Generation {
     /// Create a `Generation` from a [`u32`]. An error is returned if
     /// the input is zero.
-    pub fn new(val: u32) -> Result<Self, Error> {
+    pub fn new(val: u32) -> Result<Self, ParseError> {
         if val == 0 {
-            Err(Error::InvalidGeneration)
+            Err(ParseError::InvalidGeneration)
         } else {
             Ok(Self(val))
         }
     }
 
     /// Parse an ASCII string as a `Generation`.
-    pub fn from_ascii(s: &AsciiStr) -> Result<Self, Error> {
-        let val =
-            u32::from_str(s.as_str()).map_err(|_| Error::InvalidGeneration)?;
+    pub fn from_ascii(s: &AsciiStr) -> Result<Self, ParseError> {
+        let val = u32::from_str(s.as_str())
+            .map_err(|_| ParseError::InvalidGeneration)?;
         Self::new(val)
     }
 

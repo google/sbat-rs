@@ -8,9 +8,9 @@
 
 use ascii::AsciiChar;
 
-/// SBAT errors.
+/// SBAT parse error.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum Error {
+pub enum ParseError {
     /// CSV field is not ASCII. According to the SBAT spec, all fields
     /// must be ASCII.
     InvalidAscii,
@@ -34,3 +34,7 @@ pub enum Error {
     /// CSV record has too few fields.
     TooFewFields,
 }
+
+/// Error returned by `try_push` if the underlying storage is out of space.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct PushError;
