@@ -31,7 +31,7 @@ pub enum Error {
     /// CSV has more records than allowed.
     TooManyRecords,
 
-    /// CSV record has two few fields.
+    /// CSV record has too few fields.
     TooFewFields,
 }
 
