@@ -61,6 +61,7 @@ mod tests {
     #[test]
     fn test_generation() {
         assert_eq!(Generation::default(), Generation::new(1).unwrap());
+        assert_eq!(Generation::new(0), Err(ParseError::InvalidGeneration));
         assert_eq!(
             Generation::from_ascii(AsciiStr::from_ascii("123").unwrap())
                 .unwrap()
