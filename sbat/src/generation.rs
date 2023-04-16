@@ -67,6 +67,10 @@ mod tests {
                 .to_u32(),
             123
         );
+        assert_eq!(
+            Generation::from_ascii(AsciiStr::from_ascii("123a").unwrap()),
+            Err(ParseError::InvalidGeneration)
+        );
         assert_eq!(Generation::default().to_string(), "1");
     }
 }
