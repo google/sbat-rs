@@ -67,12 +67,17 @@ fn is_char_allowed_in_field(chr: AsciiChar) -> bool {
 /// Parse a CSV file. The `func` function will be called once for each
 /// [`Record`] that is parsed.
 pub fn parse_csv<'a, Func, const NUM_FIELDS: usize>(
-    input: &'a [u8],
+    mut input: &'a [u8],
     mut func: Func,
 ) -> Result<(), ParseError>
 where
     Func: FnMut(Record<'a, NUM_FIELDS>) -> Result<(), ParseError>,
 {
+    // Truncate the input at the first null byte.
+    if let Some(null_index) = input.iter().position(|elem| *elem == 0) {
+        input = &input[..null_index];
+    }
+
     let input =
         AsciiStr::from_ascii(input).map_err(|_| ParseError::InvalidAscii)?;
 
@@ -205,5 +210,10 @@ mod tests {
             parse_simple("\""),
             Err(ParseError::SpecialChar(AsciiChar::Quotation))
         );
+    }
+
+    #[test]
+    fn test_null_char() {
+        assert_eq!(parse_simple("a,b,c\0,d").unwrap(), [["a", "b", "c"]]);
     }
 }
