@@ -54,6 +54,12 @@ jobs:
         env:
           RUSTDOCFLAGS: -Dwarnings
 
+  cargo-deny:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: EmbarkStudios/cargo-deny-action@v1
+
   coverage:
     runs-on: ubuntu-latest
     env:
