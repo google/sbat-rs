@@ -53,3 +53,20 @@ impl Display for Generation {
         write!(f, "{}", self.0)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_generation() {
+        assert_eq!(Generation::default(), Generation::new(1).unwrap());
+        assert_eq!(
+            Generation::from_ascii(AsciiStr::from_ascii("123").unwrap())
+                .unwrap()
+                .to_u32(),
+            123
+        );
+        assert_eq!(Generation::default().to_string(), "1");
+    }
+}
