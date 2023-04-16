@@ -55,6 +55,35 @@ fn dump_sbat(input: &Path) -> Result<()> {
     Ok(())
 }
 
+fn image_sbat_to_table_string(image_sbat: &ImageSbatVec) -> String {
+    let mut builder = tabled::builder::Builder::default();
+    builder.set_header([
+        "component",
+        "gen",
+        "vendor",
+        "package",
+        "version",
+        "url",
+    ]);
+    for entry in image_sbat.entries() {
+        let component = entry.component;
+        let vendor = entry.vendor;
+        let opt_ascii_to_string = |opt: Option<&AsciiStr>| {
+            opt.map(|s| s.to_string()).unwrap_or_default()
+        };
+        builder.push_record([
+            component.name.to_string(),
+            component.generation.to_string(),
+            opt_ascii_to_string(vendor.name),
+            opt_ascii_to_string(vendor.package_name),
+            opt_ascii_to_string(vendor.version),
+            opt_ascii_to_string(vendor.url),
+        ]);
+    }
+
+    builder.build().to_string()
+}
+
 fn validate_sbat(inputs: &Vec<PathBuf>) -> Result<()> {
     let mut first = true;
     for input in inputs {
@@ -69,32 +98,7 @@ fn validate_sbat(inputs: &Vec<PathBuf>) -> Result<()> {
         // TODO: add std error support.
         let image_sbat = ImageSbatVec::parse(&data).unwrap();
 
-        let mut builder = tabled::builder::Builder::default();
-        builder.set_header([
-            "component",
-            "gen",
-            "vendor",
-            "package",
-            "version",
-            "url",
-        ]);
-        for entry in image_sbat.entries() {
-            let component = entry.component;
-            let vendor = entry.vendor;
-            let opt_ascii_to_string = |opt: Option<&AsciiStr>| {
-                opt.map(|s| s.to_string()).unwrap_or_default()
-            };
-            builder.push_record([
-                component.name.to_string(),
-                component.generation.to_string(),
-                opt_ascii_to_string(vendor.name),
-                opt_ascii_to_string(vendor.package_name),
-                opt_ascii_to_string(vendor.version),
-                opt_ascii_to_string(vendor.url),
-            ]);
-        }
-
-        println!("{}", builder.build());
+        println!("{}", image_sbat_to_table_string(&image_sbat));
     }
 
     Ok(())
