@@ -26,8 +26,6 @@ struct Args {
 // * Action to add a '.sbat' section to an existing PE file.
 //
 // * Validate/pretty-print a CSV file.
-//
-// * Support more than one input file at a time.
 
 #[derive(Subcommand)]
 enum Action {
