@@ -31,6 +31,13 @@ jobs:
       - uses: Swatinem/rust-cache@v1
       - run: cargo test -p sbat -F alloc
 
+  test-sbat-tool:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v1
+      - run: cargo test -p sbat-tool
+
   fmt:
     runs-on: ubuntu-latest
     steps:
