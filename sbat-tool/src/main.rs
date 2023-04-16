@@ -16,6 +16,7 @@ use std::path::{Path, PathBuf};
 
 /// Tool for working with SBAT (UEFI Secure Boot Advanced Targeting).
 #[derive(Parser)]
+#[command(version)]
 struct Args {
     #[command(subcommand)]
     action: Action,
