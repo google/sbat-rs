@@ -128,6 +128,9 @@ mod tests {
     use super::*;
     use crate::{Generation, ImageSbatArray, RevocationSbatArray, Vendor};
 
+    #[cfg(feature = "alloc")]
+    use crate::RevocationSbatVec;
+
     fn ascii(s: &str) -> &AsciiStr {
         AsciiStr::from_ascii(s).unwrap()
     }
@@ -165,11 +168,10 @@ mod tests {
         revocations
     }
 
-    #[test]
-    fn parse_success() {
+    fn parse_success_helper<'a, R: RevocationSbat<'a>>() {
         let input = b"sbat,1,2021030218\ncompA,1\ncompB,2";
 
-        let revocations = RevocationSbatArray::<3>::parse(input).unwrap();
+        let revocations = R::parse(input).unwrap();
 
         assert_eq!(revocations.date(), Some(ascii("2021030218")));
 
@@ -181,6 +183,17 @@ mod tests {
                 make_component("compB", 2)
             ],
         );
+    }
+
+    #[test]
+    fn parse_success_array() {
+        parse_success_helper::<RevocationSbatArray<3>>();
+    }
+
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn parse_success_vec() {
+        parse_success_helper::<RevocationSbatVec>();
     }
 
     #[test]

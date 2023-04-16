@@ -84,3 +84,14 @@ impl<'a> RevocationSbat<'a> for RevocationSbatVec<'a> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default() {
+        assert_eq!(ImageSbatVec::new(), ImageSbatVec::default());
+        assert_eq!(RevocationSbatVec::new(), RevocationSbatVec::default());
+    }
+}
