@@ -72,3 +72,19 @@ impl<'a, const N: usize> RevocationSbat<'a> for RevocationSbatArray<'a, N> {
         self.components.try_push(component).map_err(|_| PushError)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_try_push() {
+        let mut image_sbat = ImageSbatArray::<1>::new();
+        image_sbat.try_push(Entry::default()).unwrap();
+        assert_eq!(image_sbat.try_push(Entry::default()), Err(PushError));
+
+        let mut revocations = RevocationSbatArray::<1>::new();
+        revocations.try_push(Component::default()).unwrap();
+        assert_eq!(revocations.try_push(Component::default()), Err(PushError));
+    }
+}
