@@ -112,3 +112,35 @@ fn main() -> Result<()> {
         Action::Validate { input } => validate_sbat(input),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sbat::{Component, Entry, Generation, Vendor};
+
+    fn ascii(s: &str) -> &AsciiStr {
+        AsciiStr::from_ascii(s).unwrap()
+    }
+
+    #[test]
+    fn test_image_sbat_to_table_string() {
+        let mut image_sbat = ImageSbatVec::new();
+        image_sbat.push(Entry::new(
+            Component::new(ascii("pizza"), Generation::new(2).unwrap()),
+            Vendor {
+                name: Some(ascii("SomeCorp")),
+                package_name: Some(ascii("pizza")),
+                version: Some(ascii("1.2.3")),
+                url: Some(ascii("https://example.com/somecorp")),
+            },
+        ));
+        let expected =
+            "
++-----------+-----+----------+---------+---------+------------------------------+
+| component | gen | vendor   | package | version | url                          |
++-----------+-----+----------+---------+---------+------------------------------+
+| pizza     | 2   | SomeCorp | pizza   | 1.2.3   | https://example.com/somecorp |
++-----------+-----+----------+---------+---------+------------------------------+";
+        assert_eq!(image_sbat_to_table_string(&image_sbat), expected.trim());
+    }
+}
