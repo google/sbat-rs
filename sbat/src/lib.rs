@@ -8,7 +8,7 @@
 
 //! UEFI SBAT (Secure Boot Advanced Targeting)
 //!
-//! SBAT is used to revoke insecure UEFI exectuables in a way that won't
+//! SBAT is used to revoke insecure UEFI executables in a way that won't
 //! eat up the limited storage space available in the UEFI environment.
 //!
 //! There are two important sources of data:
