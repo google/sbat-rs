@@ -8,14 +8,15 @@
 
 [package]
 name = "sbat-tool"
-version = "0.3.0"
-edition = "2021"
-
 categories = ["command-line-utilities"]
 description = "UEFI Secure Boot Advanced Targeting (SBAT) command-line tool"
 keywords = ["sbat", "uefi", "cli"]
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/google/sbat-rs"
+
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
 
 [dependencies]
 anyhow = "1.0.70"
