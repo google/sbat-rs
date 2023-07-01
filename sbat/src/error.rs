@@ -7,6 +7,7 @@
 // except according to those terms.
 
 use ascii::AsciiChar;
+use core::fmt::{self, Display, Formatter};
 
 /// SBAT parse error.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -35,6 +36,37 @@ pub enum ParseError {
     TooFewFields,
 }
 
+impl Display for ParseError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidAscii => write!(f, "CSV field is not ASCII"),
+            Self::SpecialChar(c) => {
+                write!(
+                    f,
+                    "CSV field contains special character: {:#x}",
+                    c.as_byte()
+                )
+            }
+            Self::InvalidGeneration => {
+                write!(f, "invalid generation, must be a positive integer")
+            }
+            Self::TooManyRecords => write!(
+                f,
+                "the output storage is too small to contain the parsed CSV"
+            ),
+            Self::TooFewFields => {
+                write!(f, "a CSV record does not have enough fields")
+            }
+        }
+    }
+}
+
 /// Error returned by `try_push` if the underlying storage is out of space.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PushError;
+
+impl Display for PushError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "the underlying storage is out of space")
+    }
+}
