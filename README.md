@@ -1,9 +1,13 @@
 # sbat-rs
 
+[![codecov.io](https://codecov.io/gh/google/sbat-rs/coverage.svg?branch=main)](https://codecov.io/gh/google/sbat-rs)
+
 This repo contains tools for working with [SBAT][SBAT.md]. There are two
 Rust packages:
 * [`sbat`] - A no-std library for parsing SBAT and doing revocation checks.
+  * [![Crates.io](https://img.shields.io/crates/v/sbat)](https://crates.io/crates/sbat) [![Docs.rs](https://docs.rs/sbat/badge.svg)](https://docs.rs/sbat)
 * [`sbat-tool`] - A command-line utility for working with SBAT.
+  * [![Crates.io](https://img.shields.io/crates/v/sbat-tool)](https://crates.io/crates/sbat-tool)
 
 ## License
 
