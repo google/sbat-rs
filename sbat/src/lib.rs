@@ -61,6 +61,7 @@
 //! [`object`]: https://crates.io/crates/object
 
 #![warn(missing_docs)]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 // Turn off std, except when running tests.
 #![cfg_attr(not(test), no_std)]
 
