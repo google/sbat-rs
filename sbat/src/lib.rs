@@ -62,8 +62,9 @@
 
 #![warn(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
-// Turn off std, except when running tests.
-#![cfg_attr(not(test), no_std)]
+// Allow using `std` if the `std` feature is enabled, or when running
+// tests. Otherwise enable `no_std`.
+#![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 
 #[cfg(feature = "alloc")]
 extern crate alloc as rust_alloc;

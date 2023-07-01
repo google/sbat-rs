@@ -61,6 +61,9 @@ impl Display for ParseError {
     }
 }
 
+#[cfg(feature = "std")]
+impl std::error::Error for ParseError {}
+
 /// Error returned by `try_push` if the underlying storage is out of space.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PushError;
@@ -70,3 +73,6 @@ impl Display for PushError {
         write!(f, "the underlying storage is out of space")
     }
 }
+
+#[cfg(feature = "std")]
+impl std::error::Error for PushError {}
