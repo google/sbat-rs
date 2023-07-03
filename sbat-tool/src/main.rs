@@ -40,17 +40,17 @@ enum Action {
     Validate { input: Vec<PathBuf> },
 }
 
-fn read_sbat_section(input: &Path) -> Result<Vec<u8>> {
+fn read_pe_section(input: &Path, section_name: &str) -> Result<Vec<u8>> {
     let data = fs::read(input)?;
     let file = object::File::parse(&*data)?;
     let section = file
-        .section_by_name(SBAT_SECTION)
-        .ok_or(anyhow!("missing '{}' section", SBAT_SECTION))?;
+        .section_by_name(section_name)
+        .ok_or(anyhow!("missing '{}' section", section_name))?;
     Ok(section.data()?.to_vec())
 }
 
 fn dump_sbat(input: &Path) -> Result<()> {
-    let data = read_sbat_section(input)?;
+    let data = read_pe_section(input, SBAT_SECTION)?;
 
     io::stdout().write_all(&data)?;
 
@@ -96,7 +96,7 @@ fn validate_sbat(inputs: &Vec<PathBuf>) -> Result<()> {
         }
         println!("{}:", input.display());
 
-        let data = read_sbat_section(input)?;
+        let data = read_pe_section(input, SBAT_SECTION)?;
         // TODO: add std error support.
         let image_sbat = ImageSbatVec::parse(&data).unwrap();
 
