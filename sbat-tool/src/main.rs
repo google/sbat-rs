@@ -33,8 +33,13 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Action {
-    /// Print the '.sbat' section of a PE executable.
-    Dump { input: PathBuf },
+    /// Print a section of a PE executable.
+    Dump {
+        /// Name of the section to print.
+        #[arg(long, default_value = ".sbat")]
+        section: String,
+        input: PathBuf,
+    },
 
     /// Validate and pretty-print the '.sbat' section of a PE executable.
     Validate { input: Vec<PathBuf> },
@@ -49,8 +54,8 @@ fn read_pe_section(input: &Path, section_name: &str) -> Result<Vec<u8>> {
     Ok(section.data()?.to_vec())
 }
 
-fn dump_sbat(input: &Path) -> Result<()> {
-    let data = read_pe_section(input, SBAT_SECTION)?;
+fn dump_section(input: &Path, section_name: &str) -> Result<()> {
+    let data = read_pe_section(input, section_name)?;
 
     io::stdout().write_all(&data)?;
 
@@ -110,7 +115,7 @@ fn main() -> Result<()> {
     let args = Args::parse();
 
     match &args.action {
-        Action::Dump { input } => dump_sbat(input),
+        Action::Dump { input, section } => dump_section(input, section),
         Action::Validate { input } => validate_sbat(input),
     }
 }
