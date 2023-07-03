@@ -114,8 +114,7 @@ fn validate_sbat(inputs: &Vec<PathBuf>) -> Result<()> {
         ignore_broken_pipe(writeln!(stdout, "{}:", input.display()))?;
 
         let data = read_pe_section(input, SBAT_SECTION)?;
-        // TODO: add std error support.
-        let image_sbat = ImageSbatVec::parse(&data).unwrap();
+        let image_sbat = ImageSbatVec::parse(&data)?;
 
         let table = image_sbat_to_table_string(&image_sbat);
         ignore_broken_pipe(writeln!(stdout, "{table}"))?;

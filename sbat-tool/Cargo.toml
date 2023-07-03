@@ -24,5 +24,5 @@ ascii = { version = "1.1.0", default-features = false }
 clap = { version = "4.3.10", features = ["derive"] }
 fs-err = "2.9.0"
 object = { version = "0.31.1", default-features = false, features = ["pe", "read", "std"] }
-sbat = { version = "0.3.2", path = "../sbat", features = ["alloc"] }
+sbat = { version = "0.3.2", path = "../sbat", features = ["std"] }
 tabled = { version = "0.12.2", default-features = false, features = ["std"] }
