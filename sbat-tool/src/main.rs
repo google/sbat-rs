@@ -102,20 +102,23 @@ fn image_sbat_to_table_string(image_sbat: &ImageSbatVec) -> String {
 }
 
 fn validate_sbat(inputs: &Vec<PathBuf>) -> Result<()> {
+    let mut stdout = io::stdout();
+
     let mut first = true;
     for input in inputs {
         if first {
             first = false;
         } else {
-            println!();
+            ignore_broken_pipe(writeln!(stdout))?;
         }
-        println!("{}:", input.display());
+        ignore_broken_pipe(writeln!(stdout, "{}:", input.display()))?;
 
         let data = read_pe_section(input, SBAT_SECTION)?;
         // TODO: add std error support.
         let image_sbat = ImageSbatVec::parse(&data).unwrap();
 
-        println!("{}", image_sbat_to_table_string(&image_sbat));
+        let table = image_sbat_to_table_string(&image_sbat);
+        ignore_broken_pipe(writeln!(stdout, "{table}"))?;
     }
 
     Ok(())
