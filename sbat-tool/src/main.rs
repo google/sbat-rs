@@ -15,6 +15,8 @@ use sbat::{ImageSbat, ImageSbatVec};
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
+const SBAT_SECTION: &str = ".sbat";
+
 /// Tool for working with SBAT (UEFI Secure Boot Advanced Targeting).
 #[derive(Parser)]
 #[command(version)]
@@ -42,8 +44,8 @@ fn read_sbat_section(input: &Path) -> Result<Vec<u8>> {
     let data = fs::read(input)?;
     let file = object::File::parse(&*data)?;
     let section = file
-        .section_by_name(".sbat")
-        .ok_or(anyhow!("missing '.sbat' section"))?;
+        .section_by_name(SBAT_SECTION)
+        .ok_or(anyhow!("missing '{}' section", SBAT_SECTION))?;
     Ok(section.data()?.to_vec())
 }
 
