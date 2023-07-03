@@ -123,13 +123,15 @@ fn validate_sbat(inputs: &Vec<PathBuf>) -> Result<()> {
     Ok(())
 }
 
-fn main() -> Result<()> {
-    let args = Args::parse();
-
+fn run_action(args: &Args) -> Result<()> {
     match &args.action {
         Action::Dump { input, section } => dump_section(input, section),
         Action::Validate { input } => validate_sbat(input),
     }
+}
+
+fn main() -> Result<()> {
+    run_action(&Args::parse())
 }
 
 #[cfg(test)]
