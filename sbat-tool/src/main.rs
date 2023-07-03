@@ -12,6 +12,7 @@ use clap::{Parser, Subcommand};
 use fs_err as fs;
 use object::{Object, ObjectSection};
 use sbat::{ImageSbat, ImageSbatVec};
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
 /// Tool for working with SBAT (UEFI Secure Boot Advanced Targeting).
@@ -48,9 +49,8 @@ fn read_sbat_section(input: &Path) -> Result<Vec<u8>> {
 
 fn dump_sbat(input: &Path) -> Result<()> {
     let data = read_sbat_section(input)?;
-    let sbat = std::str::from_utf8(&data)?;
 
-    println!("{sbat}");
+    io::stdout().write_all(&data)?;
 
     Ok(())
 }
