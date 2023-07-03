@@ -164,4 +164,23 @@ mod tests {
 +-----------+-----+----------+---------+---------+------------------------------+";
         assert_eq!(image_sbat_to_table_string(&image_sbat), expected.trim());
     }
+
+    /// Test that a bad input path doesn't cause a panic.
+    #[test]
+    fn test_invalid_path() {
+        assert!(run_action(&Args {
+            action: Action::Dump {
+                section: SBAT_SECTION.into(),
+                input: "/bad/path".into(),
+            }
+        })
+        .is_err());
+
+        assert!(run_action(&Args {
+            action: Action::Validate {
+                input: vec!["/bad/path".into()],
+            }
+        })
+        .is_err());
+    }
 }
