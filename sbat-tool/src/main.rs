@@ -54,10 +54,20 @@ fn read_pe_section(input: &Path, section_name: &str) -> Result<Vec<u8>> {
     Ok(section.data()?.to_vec())
 }
 
+fn ignore_broken_pipe(result: io::Result<()>) -> io::Result<()> {
+    if let Err(err) = result {
+        if err.kind() != io::ErrorKind::BrokenPipe {
+            return Err(err);
+        }
+    }
+
+    Ok(())
+}
+
 fn dump_section(input: &Path, section_name: &str) -> Result<()> {
     let data = read_pe_section(input, section_name)?;
 
-    io::stdout().write_all(&data)?;
+    ignore_broken_pipe(io::stdout().write_all(&data))?;
 
     Ok(())
 }
