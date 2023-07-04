@@ -62,6 +62,10 @@
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
+#![warn(clippy::arithmetic_side_effects)]
+#![warn(clippy::pedantic)]
+#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::module_name_repetitions)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 // Allow using `std` if the `std` feature is enabled, or when running
 // tests. Otherwise enable `no_std`.
