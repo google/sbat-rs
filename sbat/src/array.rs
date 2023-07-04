@@ -21,6 +21,7 @@ pub struct ImageSbatArray<'a, const N: usize>(ArrayVec<Entry<'a>, N>);
 
 impl<'a, const N: usize> ImageSbatArray<'a, N> {
     /// Create an empty `ImageSbatArray`.
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
@@ -50,6 +51,7 @@ pub struct RevocationSbatArray<'a, const N: usize> {
 
 impl<'a, const N: usize> RevocationSbatArray<'a, N> {
     /// Create an empty `RevocationSbatArray`.
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }

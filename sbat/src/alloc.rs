@@ -21,6 +21,7 @@ pub struct ImageSbatVec<'a>(Vec<Entry<'a>>);
 
 impl<'a> ImageSbatVec<'a> {
     /// Create a new `ImageSbatVec`.
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
@@ -56,6 +57,7 @@ pub struct RevocationSbatVec<'a> {
 
 impl<'a> RevocationSbatVec<'a> {
     /// Create an empty `RevocationSbatVec`.
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }

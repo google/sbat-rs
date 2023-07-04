@@ -53,6 +53,7 @@ impl<'a> Entry<'a> {
     const NUM_FIELDS: usize = 6;
 
     /// Make a new `Entry`.
+    #[must_use]
     pub fn new(component: Component<'a>, vendor: Vendor<'a>) -> Entry<'a> {
         Entry { component, vendor }
     }
