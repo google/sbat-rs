@@ -43,6 +43,7 @@ impl Generation {
     }
 
     /// Get the generation value as a [`u32`].
+    #[must_use]
     pub fn to_u32(self) -> u32 {
         self.0
     }
