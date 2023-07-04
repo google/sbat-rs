@@ -61,7 +61,7 @@ impl<'a> RevocationSbatVec<'a> {
     }
 
     /// Add a revoked component.
-    fn push(&mut self, component: Component<'a>) {
+    pub fn push(&mut self, component: Component<'a>) {
         self.components.push(component);
     }
 }
