@@ -52,9 +52,8 @@ pub trait RevocationSbat<'a>: Default {
     fn try_push(&mut self, component: Component<'a>) -> Result<(), PushError>;
 
     /// Parse SBAT data from raw CSV. This data typically comes from a
-    /// UEFI variable. Each record is parsed as a [`Component`].
-    ///
-    /// Any existing data is cleared before parsing.
+    /// UEFI variable or the `.sbatlevel` section of a shim binary. Each
+    /// record is parsed as a [`Component`].
     fn parse(input: &'a [u8]) -> Result<Self, ParseError> {
         let mut revocations = Self::default();
 
