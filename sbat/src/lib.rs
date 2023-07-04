@@ -80,6 +80,7 @@ mod csv;
 mod error;
 mod generation;
 mod image;
+mod revocation_section;
 mod revocations;
 
 #[cfg(feature = "alloc")]
@@ -91,6 +92,9 @@ pub use csv::ALLOWED_SPECIAL_CHARS;
 pub use error::{ParseError, PushError};
 pub use generation::Generation;
 pub use image::{Entry, ImageSbat, Vendor, SBAT_SECTION_NAME};
+pub use revocation_section::{
+    RevocationSection, RevocationSectionError, REVOCATION_SECTION_NAME,
+};
 pub use revocations::{RevocationSbat, ValidationResult};
 pub use ValidationResult::{Allowed, Revoked};
 

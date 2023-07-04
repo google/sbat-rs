@@ -52,8 +52,10 @@ pub trait RevocationSbat<'a> {
     fn try_push(&mut self, component: Component<'a>) -> Result<(), PushError>;
 
     /// Parse SBAT data from raw CSV. This data typically comes from a
-    /// UEFI variable or the `.sbatlevel` section of a shim binary. Each
+    /// UEFI variable or a [`RevocationSection`]. Each
     /// record is parsed as a [`Component`].
+    ///
+    /// [`RevocationSection`]: crate::RevocationSection
     fn parse(input: &'a [u8]) -> Result<Self, ParseError>
     where
         Self: Default,
