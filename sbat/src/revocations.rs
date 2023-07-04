@@ -12,8 +12,7 @@
 //! documentation for details of how it is used.
 
 use crate::csv::{parse_csv, Record};
-use crate::{Component, ParseError, PushError};
-use crate::{Entry, ImageSbat};
+use crate::{Component, Entry, ImageSbat, ParseError, PushError};
 use ascii::AsciiStr;
 
 /// The first entry has the component name and generation like the

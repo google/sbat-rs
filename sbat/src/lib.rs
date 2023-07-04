@@ -86,8 +86,7 @@ pub use csv::ALLOWED_SPECIAL_CHARS;
 pub use error::{ParseError, PushError};
 pub use generation::Generation;
 pub use image::{Entry, ImageSbat, Vendor, SBAT_SECTION_NAME};
-pub use revocations::RevocationSbat;
-pub use revocations::ValidationResult;
+pub use revocations::{RevocationSbat, ValidationResult};
 pub use ValidationResult::{Allowed, Revoked};
 
 #[cfg(feature = "alloc")]
