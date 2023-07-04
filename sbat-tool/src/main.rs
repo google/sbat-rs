@@ -11,11 +11,9 @@ use ascii::AsciiStr;
 use clap::{Parser, Subcommand};
 use fs_err as fs;
 use object::{Object, ObjectSection};
-use sbat::{ImageSbat, ImageSbatVec};
+use sbat::{ImageSbat, ImageSbatVec, SBAT_SECTION_NAME};
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
-
-const SBAT_SECTION: &str = ".sbat";
 
 /// Tool for working with SBAT (UEFI Secure Boot Advanced Targeting).
 #[derive(Parser)]
@@ -36,7 +34,7 @@ enum Action {
     /// Print a section of a PE executable.
     Dump {
         /// Name of the section to print.
-        #[arg(long, default_value = ".sbat")]
+        #[arg(long, default_value = SBAT_SECTION_NAME)]
         section: String,
         input: PathBuf,
     },
@@ -113,7 +111,7 @@ fn validate_sbat(inputs: &Vec<PathBuf>) -> Result<()> {
         }
         ignore_broken_pipe(writeln!(stdout, "{}:", input.display()))?;
 
-        let data = read_pe_section(input, SBAT_SECTION)?;
+        let data = read_pe_section(input, SBAT_SECTION_NAME)?;
         let image_sbat = ImageSbatVec::parse(&data)?;
 
         let table = image_sbat_to_table_string(&image_sbat);
@@ -170,7 +168,7 @@ mod tests {
     fn test_invalid_path() {
         assert!(run_action(&Args {
             action: Action::Dump {
-                section: SBAT_SECTION.into(),
+                section: SBAT_SECTION_NAME.into(),
                 input: "/bad/path".into(),
             }
         })

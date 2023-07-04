@@ -16,6 +16,9 @@ use crate::csv::{parse_csv, Record};
 use crate::{Component, ParseError, PushError};
 use ascii::AsciiStr;
 
+/// Standard PE section name for SBAT metadata.
+pub const SBAT_SECTION_NAME: &str = ".sbat";
+
 /// Vendor data. This is optional human-readable data that is not used
 /// for SBAT comparison.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
