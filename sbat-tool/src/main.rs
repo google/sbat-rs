@@ -10,8 +10,12 @@ use anyhow::{anyhow, Result};
 use ascii::AsciiStr;
 use clap::{Parser, Subcommand};
 use fs_err as fs;
+use itertools::Itertools;
 use object::{Object, ObjectSection};
-use sbat::{ImageSbat, ImageSbatVec, SBAT_SECTION_NAME};
+use sbat::{
+    ImageSbat, ImageSbatVec, RevocationSbat, RevocationSbatVec,
+    RevocationSection, REVOCATION_SECTION_NAME, SBAT_SECTION_NAME,
+};
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
@@ -41,6 +45,9 @@ enum Action {
 
     /// Validate and pretty-print the '.sbat' section of a PE executable.
     Validate { input: Vec<PathBuf> },
+
+    /// Validate and pretty-print the '.sbatlevel' section of a PE executable.
+    ValidateRevocations { input: Vec<PathBuf> },
 }
 
 fn read_pe_section(input: &Path, section_name: &str) -> Result<Vec<u8>> {
@@ -99,6 +106,38 @@ fn image_sbat_to_table_string(image_sbat: &ImageSbatVec) -> String {
     builder.build().to_string()
 }
 
+fn sbat_level_section_to_table_string(
+    previous: &RevocationSbatVec,
+    latest: &RevocationSbatVec,
+) -> String {
+    let mut builder = tabled::builder::Builder::default();
+    builder.set_header([
+        "previous name",
+        "previous gen",
+        "latest name",
+        "latest gen",
+    ]);
+    for row in previous
+        .revoked_components()
+        .iter()
+        .zip_longest(latest.revoked_components())
+    {
+        let mut record = vec![];
+        for comp in [row.clone().left(), row.right()] {
+            if let Some(comp) = comp {
+                record.push(comp.name.to_string());
+                record.push(comp.generation.to_string());
+            } else {
+                record.extend(["".to_string(), "".to_string()]);
+            }
+        }
+
+        builder.push_record(record);
+    }
+
+    builder.build().to_string()
+}
+
 fn validate_sbat(inputs: &Vec<PathBuf>) -> Result<()> {
     let mut stdout = io::stdout();
 
@@ -121,10 +160,36 @@ fn validate_sbat(inputs: &Vec<PathBuf>) -> Result<()> {
     Ok(())
 }
 
+fn validate_revocations(inputs: &Vec<PathBuf>) -> Result<()> {
+    let mut stdout = io::stdout();
+
+    let mut first = true;
+    for input in inputs {
+        if first {
+            first = false;
+        } else {
+            ignore_broken_pipe(writeln!(stdout))?;
+        }
+        ignore_broken_pipe(writeln!(stdout, "{}:", input.display()))?;
+
+        let data = read_pe_section(input, REVOCATION_SECTION_NAME)?;
+
+        let sbat_level_section = RevocationSection::parse(&data)?;
+        let previous = RevocationSbatVec::parse(sbat_level_section.previous())?;
+        let latest = RevocationSbatVec::parse(sbat_level_section.latest())?;
+
+        let table = sbat_level_section_to_table_string(&previous, &latest);
+        ignore_broken_pipe(writeln!(stdout, "{table}"))?;
+    }
+
+    Ok(())
+}
+
 fn run_action(args: &Args) -> Result<()> {
     match &args.action {
         Action::Dump { input, section } => dump_section(input, section),
         Action::Validate { input } => validate_sbat(input),
+        Action::ValidateRevocations { input } => validate_revocations(input),
     }
 }
 
@@ -163,6 +228,28 @@ mod tests {
         assert_eq!(image_sbat_to_table_string(&image_sbat), expected.trim());
     }
 
+    #[test]
+    fn test_sbat_level_section_to_table_string() {
+        let mut previous = RevocationSbatVec::new();
+        previous
+            .push(Component::new(ascii("sbat"), Generation::new(1).unwrap()));
+        let mut latest = RevocationSbatVec::new();
+        latest.push(Component::new(ascii("sbat"), Generation::new(1).unwrap()));
+        latest.push(Component::new(ascii("shim"), Generation::new(2).unwrap()));
+        let expected = "
++---------------+--------------+-------------+------------+
+| previous name | previous gen | latest name | latest gen |
++---------------+--------------+-------------+------------+
+| sbat          | 1            | sbat        | 1          |
++---------------+--------------+-------------+------------+
+|               |              | shim        | 2          |
++---------------+--------------+-------------+------------+";
+        assert_eq!(
+            sbat_level_section_to_table_string(&previous, &latest),
+            expected.trim()
+        );
+    }
+
     /// Test that a bad input path doesn't cause a panic.
     #[test]
     fn test_invalid_path() {
@@ -176,6 +263,13 @@ mod tests {
 
         assert!(run_action(&Args {
             action: Action::Validate {
+                input: vec!["/bad/path".into()],
+            }
+        })
+        .is_err());
+
+        assert!(run_action(&Args {
+            action: Action::ValidateRevocations {
                 input: vec!["/bad/path".into()],
             }
         })
