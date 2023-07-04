@@ -60,6 +60,7 @@
 //! [`Vec`]: https://doc.rust-lang.org/stable/alloc/vec/struct.Vec.html
 //! [`object`]: https://crates.io/crates/object
 
+#![forbid(unsafe_code)]
 #![warn(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 // Allow using `std` if the `std` feature is enabled, or when running
