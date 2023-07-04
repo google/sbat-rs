@@ -69,6 +69,7 @@
 #[cfg(feature = "alloc")]
 extern crate alloc as rust_alloc;
 
+mod array;
 mod component;
 mod csv;
 mod error;
@@ -78,7 +79,6 @@ mod revocations;
 
 #[cfg(feature = "alloc")]
 mod alloc;
-mod array;
 
 pub use array::{ImageSbatArray, RevocationSbatArray};
 pub use component::Component;
