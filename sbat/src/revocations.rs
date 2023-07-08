@@ -90,12 +90,10 @@ pub trait RevocationSbat<'a> {
     /// entry, the component is considered revoked and the image will
     /// not pass validation. If a component is not in the revocation
     /// list then it is implicitly allowed.
-    fn validate_image<'b, I: ImageSbat<'b>>(
+    fn validate_image<'b>(
         &self,
-        image_sbat: &I,
+        image_sbat: &dyn ImageSbat<'b>,
     ) -> ValidationResult<'b> {
-        // TODO: move impl to non-generic for code size?
-
         if let Some(revoked_entry) = image_sbat
             .entries()
             .iter()
