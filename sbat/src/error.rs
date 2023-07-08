@@ -87,5 +87,13 @@ mod tests {
             format!("{}", ParseError::SpecialChar(AsciiChar::Null)),
             "CSV field contains special character: 0x00"
         );
+
+        // For the rest, don't bother testing the specific error
+        // messages, just ensure nothing panics.
+        format!("{}", ParseError::InvalidAscii);
+        format!("{}", ParseError::InvalidGeneration);
+        format!("{}", ParseError::TooManyRecords);
+        format!("{}", ParseError::TooFewFields);
+        format!("{}", PushError);
     }
 }

@@ -182,3 +182,21 @@ impl<'a> RevocationSection<'a> {
         self.latest
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_error_display() {
+        // Don't bother testing the specific error messages, just ensure
+        // nothing panics.
+        format!("{}", RevocationSectionError::MissingVersion);
+        format!("{}", RevocationSectionError::InvalidVersion(1));
+        format!("{}", RevocationSectionError::MissingHeader);
+        format!("{}", RevocationSectionError::InvalidPreviousOffset(0));
+        format!("{}", RevocationSectionError::InvalidLatestOffset(0));
+        format!("{}", RevocationSectionError::MissingPreviousNull);
+        format!("{}", RevocationSectionError::MissingLatestNull);
+    }
+}
