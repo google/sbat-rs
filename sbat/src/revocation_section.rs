@@ -106,53 +106,48 @@ impl<'a> RevocationSection<'a> {
     pub fn parse(
         mut data: &'a [u8],
     ) -> Result<RevocationSection, RevocationSectionError> {
+        use RevocationSectionError::*;
+
         const PAYLOAD_HEADER_SIZE: usize = mem::size_of::<u32>() * 2;
 
         let version_size = mem::size_of::<u32>();
         if data.len() < version_size {
-            return Err(RevocationSectionError::MissingVersion);
+            return Err(MissingVersion);
         }
         let version =
             u32::from_le_bytes(data[..version_size].try_into().unwrap());
         if version != 0 {
-            return Err(RevocationSectionError::InvalidVersion(version));
+            return Err(InvalidVersion(version));
         }
 
         data = &data[version_size..];
         if data.len() < PAYLOAD_HEADER_SIZE {
-            return Err(RevocationSectionError::MissingHeader);
+            return Err(MissingHeader);
         }
 
         let previous_offset = u32::from_le_bytes(data[..4].try_into().unwrap());
         let latest_offset = u32::from_le_bytes(data[4..8].try_into().unwrap());
 
-        let previous_start =
-            usize::try_from(previous_offset).map_err(|_| {
-                RevocationSectionError::InvalidPreviousOffset(previous_offset)
-            })?;
-        let latest_start = usize::try_from(latest_offset).map_err(|_| {
-            RevocationSectionError::InvalidLatestOffset(latest_offset)
-        })?;
+        let previous_start = usize::try_from(previous_offset)
+            .map_err(|_| InvalidPreviousOffset(previous_offset))?;
+        let latest_start = usize::try_from(latest_offset)
+            .map_err(|_| InvalidLatestOffset(latest_offset))?;
 
         if previous_start >= data.len() {
-            return Err(RevocationSectionError::InvalidPreviousOffset(
-                previous_offset,
-            ));
+            return Err(InvalidPreviousOffset(previous_offset));
         }
         if latest_start >= data.len() {
-            return Err(RevocationSectionError::InvalidLatestOffset(
-                latest_offset,
-            ));
+            return Err(InvalidLatestOffset(latest_offset));
         }
 
         let previous_len = data[previous_start..]
             .iter()
             .position(|b| *b == 0)
-            .ok_or(RevocationSectionError::MissingPreviousNull)?;
+            .ok_or(MissingPreviousNull)?;
         let latest_len = data[latest_start..]
             .iter()
             .position(|b| *b == 0)
-            .ok_or(RevocationSectionError::MissingLatestNull)?;
+            .ok_or(MissingLatestNull)?;
 
         let previous = &data
             [previous_start..previous_start.checked_add(previous_len).unwrap()];
