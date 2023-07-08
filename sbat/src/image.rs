@@ -63,11 +63,14 @@ impl<'a> Entry<'a> {
 ///
 /// Typically this data comes from the `.sbat` section of a UEFI PE
 /// executable.
-pub trait ImageSbat<'a>: Default {
+pub trait ImageSbat<'a> {
     /// Parse SBAT metadata from raw CSV. This data typically comes from
     /// the `.sbat` section of a UEFI PE executable. Each record is
     /// parsed as an [`Entry`].
-    fn parse(input: &'a [u8]) -> Result<Self, ParseError> {
+    fn parse(input: &'a [u8]) -> Result<Self, ParseError>
+    where
+        Self: Default,
+    {
         let mut sbat = Self::default();
 
         parse_csv(input, |record: Record<{ Entry::NUM_FIELDS }>| {
@@ -107,7 +110,7 @@ mod tests {
     use crate::ImageSbatVec;
     use crate::{Generation, ImageSbatArray};
 
-    fn parse_success_helper<'a, I: ImageSbat<'a>>() {
+    fn parse_success_helper<'a, I: ImageSbat<'a> + Default>() {
         // The current value of the SBAT data in the shim repo.
         let shim_sbat = b"sbat,1,SBAT Version,sbat,1,https://github.com/rhboot/shim/blob/main/SBAT.md
 shim,1,UEFI shim,shim,1,https://github.com/rhboot/shim";
