@@ -82,6 +82,12 @@ impl<'a, const N: usize> RevocationSbat<'a> for RevocationSbatArray<'a, N> {
     }
 }
 
+impl<'a, const N: usize> Display for RevocationSbatArray<'a, N> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.to_csv(f)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

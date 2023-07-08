@@ -94,6 +94,12 @@ impl<'a> RevocationSbat<'a> for RevocationSbatVec<'a> {
     }
 }
 
+impl<'a> Display for RevocationSbatVec<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.to_csv(f)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
