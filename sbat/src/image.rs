@@ -15,6 +15,7 @@
 use crate::csv::{parse_csv, Record};
 use crate::{Component, ParseError, PushError};
 use ascii::AsciiStr;
+use core::fmt::{self, Formatter};
 
 /// Standard PE section name for SBAT metadata.
 pub const SBAT_SECTION_NAME: &str = ".sbat";
@@ -94,6 +95,28 @@ pub trait ImageSbat<'a> {
         })?;
 
         Ok(sbat)
+    }
+
+    /// Format as SBAT CSV.
+    fn to_csv(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        for entry in self.entries() {
+            let empty = AsciiStr::from_ascii("").unwrap();
+
+            let comp = &entry.component;
+            let vendor = &entry.vendor;
+            writeln!(
+                f,
+                "{},{},{},{},{},{}",
+                comp.name,
+                comp.generation,
+                vendor.name.unwrap_or(empty),
+                vendor.package_name.unwrap_or(empty),
+                vendor.version.unwrap_or(empty),
+                vendor.url.unwrap_or(empty),
+            )?;
+        }
+
+        Ok(())
     }
 
     /// Get the SBAT entries.
