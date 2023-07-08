@@ -34,7 +34,7 @@ pub enum ValidationResult<'a> {
 /// Trait for revocation SBAT.
 ///
 /// Typically this data comes from a UEFI variable such as `SbatLevel`.
-pub trait RevocationSbat<'a>: Default {
+pub trait RevocationSbat<'a> {
     /// Date when the data was last updated. This is optional metadata
     /// in the first entry and may not be present.
     fn date(&self) -> Option<&AsciiStr>;
@@ -53,7 +53,10 @@ pub trait RevocationSbat<'a>: Default {
     /// Parse SBAT data from raw CSV. This data typically comes from a
     /// UEFI variable or the `.sbatlevel` section of a shim binary. Each
     /// record is parsed as a [`Component`].
-    fn parse(input: &'a [u8]) -> Result<Self, ParseError> {
+    fn parse(input: &'a [u8]) -> Result<Self, ParseError>
+    where
+        Self: Default,
+    {
         let mut revocations = Self::default();
 
         let mut first = true;
@@ -166,7 +169,7 @@ mod tests {
         revocations
     }
 
-    fn parse_success_helper<'a, R: RevocationSbat<'a>>() {
+    fn parse_success_helper<'a, R: RevocationSbat<'a> + Default>() {
         let input = b"sbat,1,2021030218\ncompA,1\ncompB,2";
 
         let revocations = R::parse(input).unwrap();
