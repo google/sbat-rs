@@ -21,6 +21,12 @@ fn test_actual_sbatlevel_data() {
     // Check that the revocation data parses.
     RevocationSbatVec::parse(sbat_level_section.previous()).unwrap();
     RevocationSbatVec::parse(sbat_level_section.latest()).unwrap();
+
+    // Check equality despite extra trailing data.
+    let mut data = data.to_vec();
+    data.push(123);
+    let sbat_level_section2 = RevocationSection::parse(&data).unwrap();
+    assert_eq!(sbat_level_section, sbat_level_section2);
 }
 
 #[test]
