@@ -126,16 +126,14 @@ pub trait RevocationSbat<'a> {
 
     /// Format as SBAT CSV.
     fn to_csv(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let mut first = true;
+        let mut date = self.date();
 
         for comp in self.revoked_components() {
-            if !first || self.date().is_none() {
+            if let Some(d) = date {
+                writeln!(f, "{},{},{}", comp.name, comp.generation, d)?;
+                date = None;
+            } else {
                 writeln!(f, "{},{}", comp.name, comp.generation)?;
-            } else if first {
-                if let Some(date) = self.date() {
-                    writeln!(f, "{},{},{}", comp.name, comp.generation, date)?;
-                }
-                first = false;
             }
         }
 
