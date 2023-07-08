@@ -9,6 +9,7 @@
 use crate::{Component, Entry, ImageSbat, PushError, RevocationSbat};
 use arrayvec::ArrayVec;
 use ascii::AsciiStr;
+use core::fmt::{self, Display, Formatter};
 
 /// Image SBAT metadata.
 ///
@@ -34,6 +35,12 @@ impl<'a, const N: usize> ImageSbat<'a> for ImageSbatArray<'a, N> {
 
     fn try_push(&mut self, entry: Entry<'a>) -> Result<(), PushError> {
         self.0.try_push(entry).map_err(|_| PushError)
+    }
+}
+
+impl<'a, const N: usize> Display for ImageSbatArray<'a, N> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.to_csv(f)
     }
 }
 

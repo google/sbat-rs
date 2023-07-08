@@ -8,6 +8,7 @@
 
 use crate::{Component, Entry, ImageSbat, PushError, RevocationSbat};
 use ascii::AsciiStr;
+use core::fmt::{self, Display, Formatter};
 use rust_alloc::vec::Vec;
 
 /// Image SBAT metadata.
@@ -40,6 +41,12 @@ impl<'a> ImageSbat<'a> for ImageSbatVec<'a> {
     fn try_push(&mut self, entry: Entry<'a>) -> Result<(), PushError> {
         self.push(entry);
         Ok(())
+    }
+}
+
+impl<'a> Display for ImageSbatVec<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.to_csv(f)
     }
 }
 
