@@ -14,6 +14,7 @@
 use crate::csv::{parse_csv, Record};
 use crate::{Component, Entry, ImageSbat, ParseError, PushError};
 use ascii::AsciiStr;
+use core::fmt::{self, Formatter};
 
 /// The first entry has the component name and generation like the
 /// others, but may also have a date field.
@@ -119,6 +120,24 @@ pub trait RevocationSbat<'a> {
             input.name == revoked_component.name
                 && input.generation < revoked_component.generation
         })
+    }
+
+    /// Format as SBAT CSV.
+    fn to_csv(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mut first = true;
+
+        for comp in self.revoked_components() {
+            if !first || self.date().is_none() {
+                writeln!(f, "{},{}", comp.name, comp.generation)?;
+            } else if first {
+                if let Some(date) = self.date() {
+                    writeln!(f, "{},{},{}", comp.name, comp.generation, date)?;
+                }
+                first = false;
+            }
+        }
+
+        Ok(())
     }
 }
 
