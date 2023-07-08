@@ -64,6 +64,7 @@
 #![warn(missing_docs)]
 #![warn(clippy::arithmetic_side_effects)]
 #![warn(clippy::pedantic)]
+#![allow(clippy::enum_glob_use)]
 #![allow(clippy::missing_errors_doc)]
 #![allow(clippy::module_name_repetitions)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
