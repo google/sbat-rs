@@ -43,7 +43,7 @@ impl Display for ParseError {
             Self::SpecialChar(c) => {
                 write!(
                     f,
-                    "CSV field contains special character: {:#x}",
+                    "CSV field contains special character: {:#04x}",
                     c.as_byte()
                 )
             }
@@ -76,3 +76,16 @@ impl Display for PushError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for PushError {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_error_display() {
+        assert_eq!(
+            format!("{}", ParseError::SpecialChar(AsciiChar::Null)),
+            "CSV field contains special character: 0x00"
+        );
+    }
+}
