@@ -58,15 +58,17 @@ shared relationship.
 
 ## Revocation data
 
-The revocation data is normally stored in an authenticated UEFI
-variable. Like the image metadata, it is a CSV-formatted list of
-components. Here's an example:
+The revocation data is normally stored in a UEFI variable. Like the
+image metadata, it is a CSV-formatted list of components. Here's an
+example:
 
     sbat,1,20210723
     pizza,2
     
 As with image metadata, only the first two fields in each record are
-used, the rest is treated as a human-readable comment.
+used for revocation. (The extra date-like field on the first line is
+used by the program that updates the revocation data, to determine
+whether the UEFI variable is up-to-date.)
 
 Each component record describes a minimum generation (version) for that
 component. If an image's component is in the revocation list, that
