@@ -8,6 +8,7 @@
 
 [workspace]
 members = ["sbat", "sbat-tool"]
+resolver = "2"
 
 [workspace.package]
 edition = "2021"
