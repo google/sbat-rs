@@ -9,10 +9,7 @@
 //! This file tests the SBAT library using the examples from:
 //! <https://github.com/rhboot/shim/blob/899314b90113abaaa4b22cd1d82a0fcb2a971850/SBAT.example.md>
 
-use sbat::{
-    Allowed, ImageSbat, ImageSbatArray, RevocationSbat, RevocationSbatArray,
-    Revoked,
-};
+use sbat::{Allowed, ImageSbat, RevocationSbat, Revoked};
 
 // Initial data.
 
@@ -199,9 +196,8 @@ fn bug2() {
 }
 
 fn assert_revoked(revocations_csv: &[u8], metadata_csv: &[u8]) {
-    let revocations =
-        RevocationSbatArray::<10>::parse(revocations_csv).unwrap();
-    let image_sbat = ImageSbatArray::<10>::parse(metadata_csv).unwrap();
+    let revocations = RevocationSbat::parse(revocations_csv).unwrap();
+    let image_sbat = ImageSbat::parse(metadata_csv).unwrap();
 
     assert!(matches!(
         revocations.validate_image(&image_sbat),
@@ -210,9 +206,8 @@ fn assert_revoked(revocations_csv: &[u8], metadata_csv: &[u8]) {
 }
 
 fn assert_allowed(revocations_csv: &[u8], metadata_csv: &[u8]) {
-    let revocations =
-        RevocationSbatArray::<10>::parse(revocations_csv).unwrap();
-    let image_sbat = ImageSbatArray::<10>::parse(metadata_csv).unwrap();
+    let revocations = RevocationSbat::parse(revocations_csv).unwrap();
+    let image_sbat = ImageSbat::parse(metadata_csv).unwrap();
 
     assert_eq!(revocations.validate_image(&image_sbat), Allowed);
 }

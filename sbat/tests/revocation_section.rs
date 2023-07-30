@@ -1,4 +1,4 @@
-use sbat::{RevocationSbat, RevocationSection, RevocationSectionError};
+use sbat::{RevocationSection, RevocationSectionError};
 
 #[cfg(feature = "alloc")]
 use sbat::RevocationSbatOwned;

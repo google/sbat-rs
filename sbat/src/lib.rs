@@ -38,14 +38,10 @@
 //! binaries or UEFI variables. Consider using the [`object`] crate to
 //! extract the `.sbat` section from a PE binary.
 //!
-//! Two variations of the API are provided:
-//!
-//! * The [`ImageSbatArray`] and [`RevocationSbatArray`] types provide
-//!   fixed-size static allocation. Use these if you want to avoid any
-//!   dynamic memory allocation.
-//!
-//! * If the `alloc` feature is enabled, the [`ImageSbatOwned`] and
-//!   [`RevocationSbatOwned`] types can be used instead.
+//! If the `alloc` feature is enabled, the [`ImageSbatOwned`] and
+//! [`RevocationSbatOwned`] types can be be used. These types own the
+//! CSV string data rather than taking a reference to it. They deref to
+//! [`ImageSbat`] and [`RevocationSbat`] respectively.
 //!
 //! # Examples
 //!
@@ -55,9 +51,6 @@
 //!
 //! [SBAT.example.md]: https://github.com/rhboot/shim/blob/HEAD/SBAT.example.md
 //! [SBAT.md]: https://github.com/rhboot/shim/blob/HEAD/SBAT.md
-//! [`ImageSbatOwned`]: https://docs.rs/sbat/latest/sbat/struct.ImageSbatOwned.html
-//! [`RevocationSbatOwned`]: https://docs.rs/sbat/latest/sbat/struct.RevocationSbatOwned.html
-//! [`Vec`]: https://doc.rust-lang.org/stable/alloc/vec/struct.Vec.html
 //! [`object`]: https://crates.io/crates/object
 
 #![warn(missing_docs)]
@@ -75,7 +68,6 @@
 #[cfg(feature = "alloc")]
 extern crate alloc as rust_alloc;
 
-mod array;
 mod component;
 mod csv;
 mod error;
@@ -88,16 +80,15 @@ mod revocations;
 #[cfg(feature = "alloc")]
 mod alloc;
 
-pub use array::{ImageSbatArray, RevocationSbatArray};
 pub use component::Component;
 pub use csv::ALLOWED_SPECIAL_CHARS;
 pub use error::{ParseError, PushError};
 pub use generation::Generation;
-pub use image::{Entry, ImageSbat, Vendor, SBAT_SECTION_NAME};
+pub use image::{Entries, Entry, ImageSbat, Vendor, SBAT_SECTION_NAME};
 pub use revocation_section::{
     RevocationSection, RevocationSectionError, REVOCATION_SECTION_NAME,
 };
-pub use revocations::{RevocationSbat, ValidationResult};
+pub use revocations::{RevocationSbat, RevokedComponents, ValidationResult};
 pub use ValidationResult::{Allowed, Revoked};
 
 #[cfg(feature = "alloc")]
