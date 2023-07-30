@@ -13,9 +13,8 @@
 //! used.
 
 use crate::csv::{trim_ascii_at_null, CsvIter, Record};
-use crate::{Component, ParseError, PushError};
+use crate::{Component, ParseError};
 use ascii::AsciiStr;
-use core::fmt::{self, Formatter};
 
 /// Standard PE section name for SBAT metadata.
 pub const SBAT_SECTION_NAME: &str = ".sbat";
@@ -75,77 +74,96 @@ impl<'a> Entry<'a> {
     }
 }
 
-/// Trait for image SBAT metadata.
+/// Iterator over entries in [`ImageSbat`].
+///
+/// See [`ImageSbat::entries`].
+pub struct Entries<'a>(CsvIter<'a, NUM_ENTRY_FIELDS>);
+
+impl<'a> Iterator for Entries<'a> {
+    type Item = Entry<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next = self.0.next()?;
+
+        // These unwraps will always succeed, because the validity of
+        // the data was already checked in ImageSbat::parse.
+        let record = next.unwrap();
+        Some(Entry::from_record(&record).unwrap())
+    }
+}
+
+/// Image SBAT metadata.
 ///
 /// Typically this data comes from the `.sbat` section of a UEFI PE
 /// executable.
-pub trait ImageSbat<'a> {
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[repr(transparent)]
+pub struct ImageSbat(AsciiStr);
+
+impl ImageSbat {
     /// Parse SBAT metadata from raw CSV. This data typically comes from
     /// the `.sbat` section of a UEFI PE executable. Each record is
     /// parsed as an [`Entry`].
-    fn parse(input: &'a [u8]) -> Result<Self, ParseError>
-    where
-        Self: Default,
-    {
+    ///
+    /// Any data past the first null in `input` is ignored. A null byte
+    /// is not required to be present.
+    pub fn parse(input: &[u8]) -> Result<&Self, ParseError> {
         let input = trim_ascii_at_null(input)?;
 
-        let mut sbat = Self::default();
-
-        for record in CsvIter::<NUM_ENTRY_FIELDS>::new(input) {
+        // Ensure that all entries are valid.
+        let iter = CsvIter::<NUM_ENTRY_FIELDS>::new(input);
+        for record in iter {
             let record = record?;
-            sbat.try_push(Entry::from_record(&record)?)
-                .map_err(|_| ParseError::TooManyRecords)?;
+            // Check that the first two fields are valid. The other
+            // fields are optional.
+            Component::from_record(&record)?;
         }
 
-        Ok(sbat)
+        Ok(Self::from_ascii_str_unchecked(input))
     }
 
-    /// Format as SBAT CSV.
-    fn to_csv(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        for entry in self.entries() {
-            let empty = AsciiStr::from_ascii("").unwrap();
-
-            let comp = &entry.component;
-            let vendor = &entry.vendor;
-            writeln!(
-                f,
-                "{},{},{},{},{},{}",
-                comp.name,
-                comp.generation,
-                vendor.name.unwrap_or(empty),
-                vendor.package_name.unwrap_or(empty),
-                vendor.version.unwrap_or(empty),
-                vendor.url.unwrap_or(empty),
-            )?;
-        }
-
-        Ok(())
+    /// Internal method to create `&Self` from `&AsciiStr`. This is
+    /// essentially a cast, it does not check the validity of the
+    /// data. It is only used in the deref implementation for
+    /// `ImageSbatOwned`. Note that although unchecked, this method is
+    /// not unsafe; invalid data passed in could lead to a panic, but no
+    /// UB.
+    #[allow(unsafe_code)]
+    pub(crate) fn from_ascii_str_unchecked(s: &AsciiStr) -> &Self {
+        // SAFETY: `Self` is a `repr(transparent)` wrapper around
+        // `AsciiStr`, so the types are compatible.
+        unsafe { &*(s as *const AsciiStr as *const Self) }
     }
 
-    /// Get the SBAT entries.
-    fn entries(&self) -> &[Entry<'a>];
+    /// Get the underlying ASCII CSV string.
+    #[must_use]
+    pub fn as_csv(&self) -> &AsciiStr {
+        &self.0
+    }
 
-    /// Add an SBAT entry.
-    fn try_push(&mut self, entry: Entry<'a>) -> Result<(), PushError>;
+    /// Get an iterator over the entries.
+    #[must_use]
+    pub fn entries(&self) -> Entries<'_> {
+        Entries(CsvIter::new(&self.0))
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Generation;
+
     #[cfg(feature = "alloc")]
     use crate::ImageSbatOwned;
-    use crate::{Generation, ImageSbatArray};
 
-    fn parse_success_helper<'a, I: ImageSbat<'a> + Default>() {
-        // The current value of the SBAT data in the shim repo.
-        let shim_sbat = b"sbat,1,SBAT Version,sbat,1,https://github.com/rhboot/shim/blob/main/SBAT.md
+    const VALID_SBAT: &[u8] = b"sbat,1,SBAT Version,sbat,1,https://github.com/rhboot/shim/blob/main/SBAT.md
 shim,1,UEFI shim,shim,1,https://github.com/rhboot/shim";
-        let metadata = I::parse(shim_sbat).unwrap();
 
+    fn parse_success_helper(image_sbat: &ImageSbat) {
         let ascii = |s| AsciiStr::from_ascii(s).unwrap();
 
         assert_eq!(
-            metadata.entries(),
+            image_sbat.entries().collect::<Vec<_>>(),
             [
                 Entry::new(
                     Component {
@@ -179,21 +197,18 @@ shim,1,UEFI shim,shim,1,https://github.com/rhboot/shim";
 
     #[test]
     fn parse_success_array() {
-        parse_success_helper::<ImageSbatArray<2>>();
+        parse_success_helper(ImageSbat::parse(VALID_SBAT).unwrap());
     }
 
     #[cfg(feature = "alloc")]
     #[test]
     fn parse_success_vec() {
-        parse_success_helper::<ImageSbatOwned>();
+        parse_success_helper(&ImageSbatOwned::parse(VALID_SBAT).unwrap());
     }
 
     #[test]
     fn invalid_record_array() {
-        assert_eq!(
-            ImageSbatArray::<2>::parse(b"a"),
-            Err(ParseError::TooFewFields)
-        );
+        assert_eq!(ImageSbat::parse(b"a"), Err(ParseError::TooFewFields));
     }
 
     #[cfg(feature = "alloc")]

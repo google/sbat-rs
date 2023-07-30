@@ -13,8 +13,8 @@ use fs_err as fs;
 use itertools::Itertools;
 use object::{Object, ObjectSection};
 use sbat::{
-    ImageSbat, ImageSbatOwned, RevocationSbat, RevocationSbatOwned,
-    RevocationSection, REVOCATION_SECTION_NAME, SBAT_SECTION_NAME,
+    ImageSbat, RevocationSbat, RevocationSection, REVOCATION_SECTION_NAME,
+    SBAT_SECTION_NAME,
 };
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
@@ -77,7 +77,7 @@ fn dump_section(input: &Path, section_name: &str) -> Result<()> {
     Ok(())
 }
 
-fn image_sbat_to_table_string(image_sbat: &ImageSbatOwned) -> String {
+fn image_sbat_to_table_string(image_sbat: &ImageSbat) -> String {
     let mut builder = tabled::builder::Builder::default();
     builder.set_header([
         "component",
@@ -107,8 +107,8 @@ fn image_sbat_to_table_string(image_sbat: &ImageSbatOwned) -> String {
 }
 
 fn sbat_level_section_to_table_string(
-    previous: &RevocationSbatOwned,
-    latest: &RevocationSbatOwned,
+    previous: &RevocationSbat,
+    latest: &RevocationSbat,
 ) -> String {
     let mut builder = tabled::builder::Builder::default();
     builder.set_header([
@@ -119,7 +119,6 @@ fn sbat_level_section_to_table_string(
     ]);
     for row in previous
         .revoked_components()
-        .iter()
         .zip_longest(latest.revoked_components())
     {
         let mut record = vec![];
@@ -151,9 +150,9 @@ fn validate_sbat(inputs: &Vec<PathBuf>) -> Result<()> {
         ignore_broken_pipe(writeln!(stdout, "{}:", input.display()))?;
 
         let data = read_pe_section(input, SBAT_SECTION_NAME)?;
-        let image_sbat = ImageSbatOwned::parse(&data)?;
+        let image_sbat = ImageSbat::parse(&data)?;
 
-        let table = image_sbat_to_table_string(&image_sbat);
+        let table = image_sbat_to_table_string(image_sbat);
         ignore_broken_pipe(writeln!(stdout, "{table}"))?;
     }
 
@@ -175,11 +174,10 @@ fn validate_revocations(inputs: &Vec<PathBuf>) -> Result<()> {
         let data = read_pe_section(input, REVOCATION_SECTION_NAME)?;
 
         let sbat_level_section = RevocationSection::parse(&data)?;
-        let previous =
-            RevocationSbatOwned::parse(sbat_level_section.previous())?;
-        let latest = RevocationSbatOwned::parse(sbat_level_section.latest())?;
+        let previous = RevocationSbat::parse(sbat_level_section.previous())?;
+        let latest = RevocationSbat::parse(sbat_level_section.latest())?;
 
-        let table = sbat_level_section_to_table_string(&previous, &latest);
+        let table = sbat_level_section_to_table_string(previous, latest);
         ignore_broken_pipe(writeln!(stdout, "{table}"))?;
     }
 
@@ -201,24 +199,13 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sbat::{Component, Entry, Generation, Vendor};
-
-    fn ascii(s: &str) -> &AsciiStr {
-        AsciiStr::from_ascii(s).unwrap()
-    }
 
     #[test]
     fn test_image_sbat_to_table_string() {
-        let mut image_sbat = ImageSbatOwned::new();
-        image_sbat.push(Entry::new(
-            Component::new(ascii("pizza"), Generation::new(2).unwrap()),
-            Vendor {
-                name: Some(ascii("SomeCorp")),
-                package_name: Some(ascii("pizza")),
-                version: Some(ascii("1.2.3")),
-                url: Some(ascii("https://example.com/somecorp")),
-            },
-        ));
+        let image_sbat = ImageSbat::parse(
+            b"pizza,2,SomeCorp,pizza,1.2.3,https://example.com/somecorp",
+        )
+        .unwrap();
         let expected =
             "
 +-----------+-----+----------+---------+---------+------------------------------+
@@ -231,12 +218,8 @@ mod tests {
 
     #[test]
     fn test_sbat_level_section_to_table_string() {
-        let mut previous = RevocationSbatOwned::new();
-        previous
-            .push(Component::new(ascii("sbat"), Generation::new(1).unwrap()));
-        let mut latest = RevocationSbatOwned::new();
-        latest.push(Component::new(ascii("sbat"), Generation::new(1).unwrap()));
-        latest.push(Component::new(ascii("shim"), Generation::new(2).unwrap()));
+        let previous = RevocationSbat::parse(b"sbat,1").unwrap();
+        let latest = RevocationSbat::parse(b"sbat,1\nshim,2").unwrap();
         let expected = "
 +---------------+--------------+-------------+------------+
 | previous name | previous gen | latest name | latest gen |
@@ -246,7 +229,7 @@ mod tests {
 |               |              | shim        | 2          |
 +---------------+--------------+-------------+------------+";
         assert_eq!(
-            sbat_level_section_to_table_string(&previous, &latest),
+            sbat_level_section_to_table_string(previous, latest),
             expected.trim()
         );
     }
