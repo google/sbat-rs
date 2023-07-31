@@ -64,23 +64,29 @@ fn is_char_allowed_in_field(chr: AsciiChar) -> bool {
     chr.is_alphanumeric() || ALLOWED_SPECIAL_CHARS.contains(&chr)
 }
 
-/// Parse a CSV file. The `func` function will be called once for each
-/// [`Record`] that is parsed.
-pub fn parse_csv<'a, Func, const NUM_FIELDS: usize>(
-    mut input: &'a [u8],
-    mut func: Func,
-) -> Result<(), ParseError>
-where
-    Func: FnMut(Record<'a, NUM_FIELDS>) -> Result<(), ParseError>,
-{
+/// Take raw bytes and convert to ASCII, stopping at the first null
+/// byte. If no null byte is present, the entire input will be
+/// converted.
+pub(crate) fn trim_ascii_at_null(
+    mut input: &[u8],
+) -> Result<&AsciiStr, ParseError> {
     // Truncate the input at the first null byte.
     if let Some(null_index) = input.iter().position(|elem| *elem == 0) {
         input = &input[..null_index];
     }
 
-    let input =
-        AsciiStr::from_ascii(input).map_err(|_| ParseError::InvalidAscii)?;
+    AsciiStr::from_ascii(input).map_err(|_| ParseError::InvalidAscii)
+}
 
+/// Parse a CSV file. The `func` function will be called once for each
+/// [`Record`] that is parsed.
+pub fn parse_csv<'a, Func, const NUM_FIELDS: usize>(
+    input: &'a AsciiStr,
+    mut func: Func,
+) -> Result<(), ParseError>
+where
+    Func: FnMut(Record<'a, NUM_FIELDS>) -> Result<(), ParseError>,
+{
     for line in input.lines() {
         // Don't return a record for an empty line.
         if line.is_empty() {
@@ -146,10 +152,23 @@ impl<'a, const NUM_FIELDS: usize> Record<'a, NUM_FIELDS> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn test_trim_ascii_at_null() {
+        // Everything after null byte is removed.
+        assert_eq!(
+            trim_ascii_at_null(b"a,b,c\0,d").unwrap().as_bytes(),
+            b"a,b,c"
+        );
+
+        // No null byte is required.
+        assert_eq!(trim_ascii_at_null(b"a,b,c").unwrap().as_bytes(), b"a,b,c");
+    }
+
     fn parse_simple<'a>(s: &'a str) -> Result<Vec<Vec<String>>, ParseError> {
+        let s = AsciiStr::from_ascii(s).unwrap();
         const NUM_FIELDS: usize = 3;
         let mut output = Vec::new();
-        parse_csv(s.as_bytes(), |record: Record<NUM_FIELDS>| {
+        parse_csv(s, |record: Record<NUM_FIELDS>| {
             output
                 .push(record.0.iter().map(|field| field.to_string()).collect());
             Ok(())
@@ -210,10 +229,5 @@ mod tests {
             parse_simple("\""),
             Err(ParseError::SpecialChar(AsciiChar::Quotation))
         );
-    }
-
-    #[test]
-    fn test_null_char() {
-        assert_eq!(parse_simple("a,b,c\0,d").unwrap(), [["a", "b", "c"]]);
     }
 }
