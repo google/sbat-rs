@@ -81,6 +81,7 @@ mod csv;
 mod error;
 mod generation;
 mod image;
+mod lines;
 mod revocation_section;
 mod revocations;
 
