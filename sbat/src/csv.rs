@@ -130,18 +130,18 @@ impl<'a, const NUM_FIELDS: usize> Iterator for CsvIter<'a, NUM_FIELDS> {
 
 /// CSV record. This represents a line of comma-separated fields.
 #[derive(Clone, Default)]
-pub struct Record<'a, const NUM_FIELDS: usize>(
+pub(crate) struct Record<'a, const NUM_FIELDS: usize>(
     ArrayVec<&'a AsciiStr, NUM_FIELDS>,
 );
 
 impl<'a, const NUM_FIELDS: usize> Record<'a, NUM_FIELDS> {
-    pub fn get_field(&self, index: usize) -> Option<&'a AsciiStr> {
+    pub(crate) fn get_field(&self, index: usize) -> Option<&'a AsciiStr> {
         self.0.get(index).copied()
     }
 
     /// Get the contents of the record's field at `index` as a
     /// `Generation`.
-    pub fn get_field_as_generation(
+    pub(crate) fn get_field_as_generation(
         &self,
         index: usize,
     ) -> Result<Option<Generation>, ParseError> {
