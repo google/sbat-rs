@@ -1,7 +1,7 @@
 use sbat::{RevocationSbat, RevocationSection, RevocationSectionError};
 
 #[cfg(feature = "alloc")]
-use sbat::RevocationSbatVec;
+use sbat::RevocationSbatOwned;
 
 /// Parse the actual `.sbatlevel` data in shim as of 2023-01-29.
 #[cfg(feature = "alloc")]
@@ -19,8 +19,8 @@ fn test_actual_sbatlevel_data() {
     );
 
     // Check that the revocation data parses.
-    RevocationSbatVec::parse(sbat_level_section.previous()).unwrap();
-    RevocationSbatVec::parse(sbat_level_section.latest()).unwrap();
+    RevocationSbatOwned::parse(sbat_level_section.previous()).unwrap();
+    RevocationSbatOwned::parse(sbat_level_section.latest()).unwrap();
 
     // Check equality despite extra trailing data.
     let mut data = data.to_vec();

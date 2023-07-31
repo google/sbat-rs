@@ -144,7 +144,7 @@ mod tests {
     use crate::{Generation, ImageSbatArray, RevocationSbatArray, Vendor};
 
     #[cfg(feature = "alloc")]
-    use crate::RevocationSbatVec;
+    use crate::RevocationSbatOwned;
 
     fn ascii(s: &str) -> &AsciiStr {
         AsciiStr::from_ascii(s).unwrap()
@@ -208,7 +208,7 @@ mod tests {
     #[cfg(feature = "alloc")]
     #[test]
     fn parse_success_vec() {
-        parse_success_helper::<RevocationSbatVec>();
+        parse_success_helper::<RevocationSbatOwned>();
     }
 
     #[test]

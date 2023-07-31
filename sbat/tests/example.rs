@@ -3,7 +3,7 @@ use sbat::{
     ValidationResult,
 };
 #[cfg(feature = "alloc")]
-use sbat::{ImageSbatOwned, RevocationSbatVec};
+use sbat::{ImageSbatOwned, RevocationSbatOwned};
 
 const IMAGE_SBAT_A1: &[u8] = b"sbat,1\nCompA,1";
 const IMAGE_SBAT_A2: &[u8] = b"sbat,1\nCompA,2";
@@ -40,7 +40,7 @@ fn example_fixed_size() -> Result<(), ParseError> {
 fn example_vec() -> Result<(), ParseError> {
     // Parse the image and revocation SBAT.
     let image_sbat = ImageSbatOwned::parse(IMAGE_SBAT_A1)?;
-    let revocations = RevocationSbatVec::parse(REVOCATION_SBAT)?;
+    let revocations = RevocationSbatOwned::parse(REVOCATION_SBAT)?;
 
     // Check that the image is revoked.
     assert_eq!(
