@@ -48,6 +48,15 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo test -p sbat -F std
 
+  test-sbat-miri:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: rustup install nightly --profile minimal
+      - run: rustup component add miri --toolchain nightly
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo +nightly miri test -p sbat -F alloc
+
   test-sbat-tool:
     runs-on: ubuntu-latest
     steps:
