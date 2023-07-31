@@ -44,7 +44,7 @@
 //!   fixed-size static allocation. Use these if you want to avoid any
 //!   dynamic memory allocation.
 //!
-//! * If the `alloc` feature is enabled, the [`ImageSbatVec`] and
+//! * If the `alloc` feature is enabled, the [`ImageSbatOwned`] and
 //!   [`RevocationSbatVec`] types can be used instead.
 //!
 //! # Examples
@@ -55,7 +55,7 @@
 //!
 //! [SBAT.example.md]: https://github.com/rhboot/shim/blob/HEAD/SBAT.example.md
 //! [SBAT.md]: https://github.com/rhboot/shim/blob/HEAD/SBAT.md
-//! [`ImageSbatVec`]: https://docs.rs/sbat/latest/sbat/struct.ImageSbatVec.html
+//! [`ImageSbatOwned`]: https://docs.rs/sbat/latest/sbat/struct.ImageSbatOwned.html
 //! [`RevocationSbatVec`]: https://docs.rs/sbat/latest/sbat/struct.RevocationSbatVec.html
 //! [`Vec`]: https://doc.rust-lang.org/stable/alloc/vec/struct.Vec.html
 //! [`object`]: https://crates.io/crates/object
@@ -101,4 +101,4 @@ pub use revocations::{RevocationSbat, ValidationResult};
 pub use ValidationResult::{Allowed, Revoked};
 
 #[cfg(feature = "alloc")]
-pub use alloc::{ImageSbatVec, RevocationSbatVec};
+pub use alloc::{ImageSbatOwned, RevocationSbatVec};
