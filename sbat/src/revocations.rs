@@ -11,7 +11,7 @@
 //! Typically this data is read from a UEFI variable. See the crate
 //! documentation for details of how it is used.
 
-use crate::csv::{parse_csv, trim_ascii_at_null, Record};
+use crate::csv::{trim_ascii_at_null, CsvIter};
 use crate::{Component, Entry, ImageSbat, ParseError, PushError};
 use ascii::AsciiStr;
 use core::fmt::{self, Formatter};
@@ -66,7 +66,9 @@ pub trait RevocationSbat<'a> {
 
         let mut first = true;
 
-        parse_csv(input, |record: Record<MAX_HEADER_FIELDS>| {
+        for record in CsvIter::<MAX_HEADER_FIELDS>::new(input) {
+            let record = record?;
+
             if first {
                 revocations.set_date(record.get_field(2));
                 first = false;
@@ -74,8 +76,8 @@ pub trait RevocationSbat<'a> {
 
             revocations
                 .try_push(Component::from_record(&record)?)
-                .map_err(|_| ParseError::TooManyRecords)
-        })?;
+                .map_err(|_| ParseError::TooManyRecords)?;
+        }
 
         Ok(revocations)
     }

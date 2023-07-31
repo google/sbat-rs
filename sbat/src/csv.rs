@@ -24,6 +24,7 @@
 //!   first two fields in each line as human-readable comments, so
 //!   dropping the data is OK.
 
+use crate::lines::LineIter;
 use crate::{Generation, ParseError};
 use arrayvec::ArrayVec;
 use ascii::{AsciiChar, AsciiStr};
@@ -78,39 +79,53 @@ pub(crate) fn trim_ascii_at_null(
     AsciiStr::from_ascii(input).map_err(|_| ParseError::InvalidAscii)
 }
 
-/// Parse a CSV file. The `func` function will be called once for each
-/// [`Record`] that is parsed.
-pub fn parse_csv<'a, Func, const NUM_FIELDS: usize>(
-    input: &'a AsciiStr,
-    mut func: Func,
-) -> Result<(), ParseError>
-where
-    Func: FnMut(Record<'a, NUM_FIELDS>) -> Result<(), ParseError>,
-{
-    for line in input.lines() {
-        // Don't return a record for an empty line.
-        if line.is_empty() {
-            continue;
+/// CSV iterator.
+///
+/// This iterator parses an ASCII string into records. Each record has a
+/// fixed maximum length of `NUM_FIELDS`.
+pub(crate) struct CsvIter<'a, const NUM_FIELDS: usize> {
+    line_iter: Option<LineIter<'a>>,
+}
+
+impl<'a, const NUM_FIELDS: usize> CsvIter<'a, NUM_FIELDS> {
+    /// Create a new CSV iterator.
+    pub(crate) fn new(input: &'a AsciiStr) -> Self {
+        Self {
+            line_iter: Some(LineIter::new(input)),
+        }
+    }
+}
+
+impl<'a, const NUM_FIELDS: usize> Iterator for CsvIter<'a, NUM_FIELDS> {
+    type Item = Result<Record<'a, NUM_FIELDS>, ParseError>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let line_iter = self.line_iter.as_mut()?;
+
+        let mut line;
+        // Skip empty lines.
+        loop {
+            line = line_iter.next()?;
+            if !line.is_empty() {
+                break;
+            }
         }
 
         let mut record = Record::default();
-
         for field in line.split(AsciiChar::Comma) {
             // Reject all special characters.
             if let Some(special_char) =
                 field.chars().find(|chr| !is_char_allowed_in_field(*chr))
             {
-                return Err(ParseError::SpecialChar(special_char));
+                self.line_iter = None;
+                return Some(Err(ParseError::SpecialChar(special_char)));
             }
 
             record.add_field(field);
         }
 
-        func(record.clone())?;
-        record.0.clear();
+        Some(Ok(record))
     }
-
-    Ok(())
 }
 
 /// CSV record. This represents a line of comma-separated fields.
@@ -164,58 +179,56 @@ mod tests {
         assert_eq!(trim_ascii_at_null(b"a,b,c").unwrap().as_bytes(), b"a,b,c");
     }
 
-    fn parse_simple<'a>(s: &'a str) -> Result<Vec<Vec<String>>, ParseError> {
+    fn parse_simple<'a>(s: &'a str) -> Vec<Result<Vec<&str>, ParseError>> {
         let s = AsciiStr::from_ascii(s).unwrap();
-        const NUM_FIELDS: usize = 3;
-        let mut output = Vec::new();
-        parse_csv(s, |record: Record<NUM_FIELDS>| {
-            output
-                .push(record.0.iter().map(|field| field.to_string()).collect());
-            Ok(())
-        })?;
-        Ok(output)
+        CsvIter::<3>::new(s)
+            .map(|record| -> Result<Vec<&str>, ParseError> {
+                let record = record?;
+                Ok(record.0.iter().map(|field| field.as_str()).collect())
+            })
+            .collect()
     }
 
     #[test]
     fn test_empty() {
-        assert!(parse_simple("").unwrap().is_empty());
+        assert_eq!(parse_simple(""), []);
     }
 
     #[test]
     fn test_single_field() {
-        assert_eq!(parse_simple("ab").unwrap(), [["ab"]]);
+        assert_eq!(parse_simple("ab"), [Ok(vec!["ab"])]);
     }
 
     #[test]
     fn test_single_field_with_newline() {
-        assert_eq!(parse_simple("ab\n").unwrap(), [["ab"]]);
+        assert_eq!(parse_simple("ab\n"), [Ok(vec!["ab"])]);
     }
 
     #[test]
     fn test_two_fields() {
-        assert_eq!(parse_simple("ab,cd").unwrap(), [["ab", "cd"]]);
+        assert_eq!(parse_simple("ab,cd"), [Ok(vec!["ab", "cd"])]);
     }
 
     #[test]
     fn test_empty_record() {
-        assert_eq!(parse_simple("a\n\nb").unwrap(), [["a"], ["b"]]);
+        assert_eq!(parse_simple("a\n\nb"), [Ok(vec!["a"]), Ok(vec!["b"])]);
     }
 
     #[test]
     fn test_empty_field() {
-        assert_eq!(parse_simple("a,,b").unwrap(), [["a", "", "b"]]);
+        assert_eq!(parse_simple("a,,b"), [Ok(vec!["a", "", "b"])]);
     }
 
     #[test]
     fn ignore_extra_fields() {
-        assert_eq!(parse_simple("a,b,c,d").unwrap(), [["a", "b", "c"]]);
+        assert_eq!(parse_simple("a,b,c,d"), [Ok(vec!["a", "b", "c"])]);
     }
 
     #[test]
     fn test_url() {
         assert_eq!(
-            parse_simple("http://example.com").unwrap(),
-            [["http://example.com"]]
+            parse_simple("http://example.com"),
+            [Ok(vec!["http://example.com"])]
         );
     }
 
@@ -223,11 +236,28 @@ mod tests {
     fn test_special_char() {
         assert_eq!(
             parse_simple("\\"),
-            Err(ParseError::SpecialChar(AsciiChar::BackSlash))
+            [Err(ParseError::SpecialChar(AsciiChar::BackSlash))]
         );
         assert_eq!(
             parse_simple("\""),
-            Err(ParseError::SpecialChar(AsciiChar::Quotation))
+            [Err(ParseError::SpecialChar(AsciiChar::Quotation))]
+        );
+    }
+
+    #[test]
+    fn test_error_ends_iteration() {
+        assert_eq!(
+            parse_simple(
+                r#"
+ab,cd
+ef,"gh"
+ij
+"#
+            ),
+            [
+                Ok(vec!["ab", "cd"]),
+                Err(ParseError::SpecialChar(AsciiChar::Quotation))
+            ]
         );
     }
 }
