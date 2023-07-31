@@ -28,5 +28,5 @@ ascii = { version = "1.0.0", default-features = false }
 log = { version = "0.4.0", default-features = false }
 
 [features]
-alloc = []
+alloc = ["ascii/alloc"]
 std = ["alloc"]
