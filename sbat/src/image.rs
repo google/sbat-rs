@@ -50,13 +50,28 @@ pub struct Entry<'a> {
     pub vendor: Vendor<'a>,
 }
 
-impl<'a> Entry<'a> {
-    const NUM_FIELDS: usize = 6;
+const NUM_ENTRY_FIELDS: usize = 6;
 
+impl<'a> Entry<'a> {
     /// Make a new `Entry`.
     #[must_use]
     pub fn new(component: Component<'a>, vendor: Vendor<'a>) -> Entry<'a> {
         Entry { component, vendor }
+    }
+
+    /// Parse an `Entry` from a `Record`.
+    fn from_record(
+        record: &Record<'a, NUM_ENTRY_FIELDS>,
+    ) -> Result<Self, ParseError> {
+        Ok(Self::new(
+            Component::from_record(record)?,
+            Vendor {
+                name: record.get_field(2),
+                package_name: record.get_field(3),
+                version: record.get_field(4),
+                url: record.get_field(5),
+            },
+        ))
     }
 }
 
@@ -74,24 +89,9 @@ pub trait ImageSbat<'a> {
     {
         let mut sbat = Self::default();
 
-        parse_csv(input, |record: Record<{ Entry::NUM_FIELDS }>| {
-            sbat.try_push(Entry::new(
-                Component {
-                    name: record
-                        .get_field(0)
-                        .ok_or(ParseError::TooFewFields)?,
-                    generation: record
-                        .get_field_as_generation(1)?
-                        .ok_or(ParseError::TooFewFields)?,
-                },
-                Vendor {
-                    name: record.get_field(2),
-                    package_name: record.get_field(3),
-                    version: record.get_field(4),
-                    url: record.get_field(5),
-                },
-            ))
-            .map_err(|_| ParseError::TooManyRecords)
+        parse_csv(input, |record: Record<NUM_ENTRY_FIELDS>| {
+            sbat.try_push(Entry::from_record(&record)?)
+                .map_err(|_| ParseError::TooManyRecords)
         })?;
 
         Ok(sbat)

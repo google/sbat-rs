@@ -71,14 +71,7 @@ pub trait RevocationSbat<'a> {
             }
 
             revocations
-                .try_push(Component {
-                    name: record
-                        .get_field(0)
-                        .ok_or(ParseError::TooFewFields)?,
-                    generation: record
-                        .get_field_as_generation(1)?
-                        .ok_or(ParseError::TooFewFields)?,
-                })
+                .try_push(Component::from_record(&record)?)
                 .map_err(|_| ParseError::TooManyRecords)
         })?;
 
