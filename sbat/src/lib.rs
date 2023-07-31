@@ -45,7 +45,7 @@
 //!   dynamic memory allocation.
 //!
 //! * If the `alloc` feature is enabled, the [`ImageSbatOwned`] and
-//!   [`RevocationSbatVec`] types can be used instead.
+//!   [`RevocationSbatOwned`] types can be used instead.
 //!
 //! # Examples
 //!
@@ -56,7 +56,7 @@
 //! [SBAT.example.md]: https://github.com/rhboot/shim/blob/HEAD/SBAT.example.md
 //! [SBAT.md]: https://github.com/rhboot/shim/blob/HEAD/SBAT.md
 //! [`ImageSbatOwned`]: https://docs.rs/sbat/latest/sbat/struct.ImageSbatOwned.html
-//! [`RevocationSbatVec`]: https://docs.rs/sbat/latest/sbat/struct.RevocationSbatVec.html
+//! [`RevocationSbatOwned`]: https://docs.rs/sbat/latest/sbat/struct.RevocationSbatOwned.html
 //! [`Vec`]: https://doc.rust-lang.org/stable/alloc/vec/struct.Vec.html
 //! [`object`]: https://crates.io/crates/object
 
@@ -101,4 +101,4 @@ pub use revocations::{RevocationSbat, ValidationResult};
 pub use ValidationResult::{Allowed, Revoked};
 
 #[cfg(feature = "alloc")]
-pub use alloc::{ImageSbatOwned, RevocationSbatVec};
+pub use alloc::{ImageSbatOwned, RevocationSbatOwned};

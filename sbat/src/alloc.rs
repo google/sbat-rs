@@ -57,13 +57,13 @@ impl<'a> Display for ImageSbatOwned<'a> {
 ///
 /// See the [crate] documentation for a usage example.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct RevocationSbatVec<'a> {
+pub struct RevocationSbatOwned<'a> {
     date: Option<&'a AsciiStr>,
     components: Vec<Component<'a>>,
 }
 
-impl<'a> RevocationSbatVec<'a> {
-    /// Create an empty `RevocationSbatVec`.
+impl<'a> RevocationSbatOwned<'a> {
+    /// Create an empty `RevocationSbatOwned`.
     #[must_use]
     pub fn new() -> Self {
         Self::default()
@@ -75,7 +75,7 @@ impl<'a> RevocationSbatVec<'a> {
     }
 }
 
-impl<'a> RevocationSbat<'a> for RevocationSbatVec<'a> {
+impl<'a> RevocationSbat<'a> for RevocationSbatOwned<'a> {
     fn date(&self) -> Option<&AsciiStr> {
         self.date
     }
@@ -94,7 +94,7 @@ impl<'a> RevocationSbat<'a> for RevocationSbatVec<'a> {
     }
 }
 
-impl<'a> Display for RevocationSbatVec<'a> {
+impl<'a> Display for RevocationSbatOwned<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.to_csv(f)
     }
@@ -107,6 +107,6 @@ mod tests {
     #[test]
     fn test_default() {
         assert_eq!(ImageSbatOwned::new(), ImageSbatOwned::default());
-        assert_eq!(RevocationSbatVec::new(), RevocationSbatVec::default());
+        assert_eq!(RevocationSbatOwned::new(), RevocationSbatOwned::default());
     }
 }
