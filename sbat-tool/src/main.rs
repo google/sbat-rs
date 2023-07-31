@@ -13,7 +13,7 @@ use fs_err as fs;
 use itertools::Itertools;
 use object::{Object, ObjectSection};
 use sbat::{
-    ImageSbat, ImageSbatVec, RevocationSbat, RevocationSbatVec,
+    ImageSbat, ImageSbatOwned, RevocationSbat, RevocationSbatVec,
     RevocationSection, REVOCATION_SECTION_NAME, SBAT_SECTION_NAME,
 };
 use std::io::{self, Write};
@@ -77,7 +77,7 @@ fn dump_section(input: &Path, section_name: &str) -> Result<()> {
     Ok(())
 }
 
-fn image_sbat_to_table_string(image_sbat: &ImageSbatVec) -> String {
+fn image_sbat_to_table_string(image_sbat: &ImageSbatOwned) -> String {
     let mut builder = tabled::builder::Builder::default();
     builder.set_header([
         "component",
@@ -151,7 +151,7 @@ fn validate_sbat(inputs: &Vec<PathBuf>) -> Result<()> {
         ignore_broken_pipe(writeln!(stdout, "{}:", input.display()))?;
 
         let data = read_pe_section(input, SBAT_SECTION_NAME)?;
-        let image_sbat = ImageSbatVec::parse(&data)?;
+        let image_sbat = ImageSbatOwned::parse(&data)?;
 
         let table = image_sbat_to_table_string(&image_sbat);
         ignore_broken_pipe(writeln!(stdout, "{table}"))?;
@@ -208,7 +208,7 @@ mod tests {
 
     #[test]
     fn test_image_sbat_to_table_string() {
-        let mut image_sbat = ImageSbatVec::new();
+        let mut image_sbat = ImageSbatOwned::new();
         image_sbat.push(Entry::new(
             Component::new(ascii("pizza"), Generation::new(2).unwrap()),
             Vendor {

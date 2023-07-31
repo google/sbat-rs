@@ -133,7 +133,7 @@ pub trait ImageSbat<'a> {
 mod tests {
     use super::*;
     #[cfg(feature = "alloc")]
-    use crate::ImageSbatVec;
+    use crate::ImageSbatOwned;
     use crate::{Generation, ImageSbatArray};
 
     fn parse_success_helper<'a, I: ImageSbat<'a> + Default>() {
@@ -185,7 +185,7 @@ shim,1,UEFI shim,shim,1,https://github.com/rhboot/shim";
     #[cfg(feature = "alloc")]
     #[test]
     fn parse_success_vec() {
-        parse_success_helper::<ImageSbatVec>();
+        parse_success_helper::<ImageSbatOwned>();
     }
 
     #[test]
@@ -199,6 +199,6 @@ shim,1,UEFI shim,shim,1,https://github.com/rhboot/shim";
     #[cfg(feature = "alloc")]
     #[test]
     fn invalid_record_vec() {
-        assert_eq!(ImageSbatVec::parse(b"a"), Err(ParseError::TooFewFields));
+        assert_eq!(ImageSbatOwned::parse(b"a"), Err(ParseError::TooFewFields));
     }
 }

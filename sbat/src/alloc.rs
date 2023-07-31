@@ -18,10 +18,10 @@ use rust_alloc::vec::Vec;
 ///
 /// See the [crate] documentation for a usage example.
 #[derive(Debug, Default, Eq, PartialEq)]
-pub struct ImageSbatVec<'a>(Vec<Entry<'a>>);
+pub struct ImageSbatOwned<'a>(Vec<Entry<'a>>);
 
-impl<'a> ImageSbatVec<'a> {
-    /// Create a new `ImageSbatVec`.
+impl<'a> ImageSbatOwned<'a> {
+    /// Create a new `ImageSbatOwned`.
     #[must_use]
     pub fn new() -> Self {
         Self::default()
@@ -33,7 +33,7 @@ impl<'a> ImageSbatVec<'a> {
     }
 }
 
-impl<'a> ImageSbat<'a> for ImageSbatVec<'a> {
+impl<'a> ImageSbat<'a> for ImageSbatOwned<'a> {
     fn entries(&self) -> &[Entry<'a>] {
         &self.0
     }
@@ -44,7 +44,7 @@ impl<'a> ImageSbat<'a> for ImageSbatVec<'a> {
     }
 }
 
-impl<'a> Display for ImageSbatVec<'a> {
+impl<'a> Display for ImageSbatOwned<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.to_csv(f)
     }
@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn test_default() {
-        assert_eq!(ImageSbatVec::new(), ImageSbatVec::default());
+        assert_eq!(ImageSbatOwned::new(), ImageSbatOwned::default());
         assert_eq!(RevocationSbatVec::new(), RevocationSbatVec::default());
     }
 }

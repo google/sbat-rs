@@ -1,7 +1,7 @@
 use sbat::{ImageSbat, ImageSbatArray, RevocationSbat, RevocationSbatArray};
 
 #[cfg(feature = "alloc")]
-use sbat::{ImageSbatVec, RevocationSbatVec};
+use sbat::{ImageSbatOwned, RevocationSbatVec};
 
 const IMAGE_SBAT: &str = "
 sbat,1,SBAT Version,sbat,1,https://github.com/rhboot/shim/blob/main/SBAT.md
@@ -30,7 +30,7 @@ fn test_image_sbat_array_display() {
 #[cfg(feature = "alloc")]
 #[test]
 fn test_image_sbat_vec_display() {
-    let parsed = ImageSbatVec::parse(IMAGE_SBAT.as_bytes()).unwrap();
+    let parsed = ImageSbatOwned::parse(IMAGE_SBAT.as_bytes()).unwrap();
     assert_eq!(format!("{parsed}"), IMAGE_SBAT.trim_start());
 }
 
