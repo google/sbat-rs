@@ -6,7 +6,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::Generation;
+use crate::csv::Record;
+use crate::{Generation, ParseError};
 use ascii::AsciiStr;
 
 /// SBAT component. This is the machine-readable portion of SBAT that is
@@ -26,5 +27,17 @@ impl<'a> Component<'a> {
     #[must_use]
     pub fn new(name: &AsciiStr, generation: Generation) -> Component {
         Component { name, generation }
+    }
+
+    /// Parse a `Component` from a `Record`.
+    pub(crate) fn from_record<const N: usize>(
+        record: &Record<'a, N>,
+    ) -> Result<Self, ParseError> {
+        Ok(Self {
+            name: record.get_field(0).ok_or(ParseError::TooFewFields)?,
+            generation: record
+                .get_field_as_generation(1)?
+                .ok_or(ParseError::TooFewFields)?,
+        })
     }
 }
