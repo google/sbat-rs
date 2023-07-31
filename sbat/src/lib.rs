@@ -82,7 +82,7 @@ mod alloc;
 
 pub use component::Component;
 pub use csv::ALLOWED_SPECIAL_CHARS;
-pub use error::{ParseError, PushError};
+pub use error::ParseError;
 pub use generation::Generation;
 pub use image::{Entries, Entry, ImageSbat, Vendor, SBAT_SECTION_NAME};
 pub use revocation_section::{
