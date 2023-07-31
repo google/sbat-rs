@@ -60,8 +60,8 @@
 //! [`Vec`]: https://doc.rust-lang.org/stable/alloc/vec/struct.Vec.html
 //! [`object`]: https://crates.io/crates/object
 
-#![forbid(unsafe_code)]
 #![warn(missing_docs)]
+#![warn(unsafe_code)]
 #![warn(clippy::arithmetic_side_effects)]
 #![warn(clippy::pedantic)]
 #![allow(clippy::enum_glob_use)]
