@@ -13,7 +13,7 @@ use fs_err as fs;
 use itertools::Itertools;
 use object::{Object, ObjectSection};
 use sbat::{
-    ImageSbat, ImageSbatOwned, RevocationSbat, RevocationSbatVec,
+    ImageSbat, ImageSbatOwned, RevocationSbat, RevocationSbatOwned,
     RevocationSection, REVOCATION_SECTION_NAME, SBAT_SECTION_NAME,
 };
 use std::io::{self, Write};
@@ -107,8 +107,8 @@ fn image_sbat_to_table_string(image_sbat: &ImageSbatOwned) -> String {
 }
 
 fn sbat_level_section_to_table_string(
-    previous: &RevocationSbatVec,
-    latest: &RevocationSbatVec,
+    previous: &RevocationSbatOwned,
+    latest: &RevocationSbatOwned,
 ) -> String {
     let mut builder = tabled::builder::Builder::default();
     builder.set_header([
@@ -175,8 +175,9 @@ fn validate_revocations(inputs: &Vec<PathBuf>) -> Result<()> {
         let data = read_pe_section(input, REVOCATION_SECTION_NAME)?;
 
         let sbat_level_section = RevocationSection::parse(&data)?;
-        let previous = RevocationSbatVec::parse(sbat_level_section.previous())?;
-        let latest = RevocationSbatVec::parse(sbat_level_section.latest())?;
+        let previous =
+            RevocationSbatOwned::parse(sbat_level_section.previous())?;
+        let latest = RevocationSbatOwned::parse(sbat_level_section.latest())?;
 
         let table = sbat_level_section_to_table_string(&previous, &latest);
         ignore_broken_pipe(writeln!(stdout, "{table}"))?;
@@ -230,10 +231,10 @@ mod tests {
 
     #[test]
     fn test_sbat_level_section_to_table_string() {
-        let mut previous = RevocationSbatVec::new();
+        let mut previous = RevocationSbatOwned::new();
         previous
             .push(Component::new(ascii("sbat"), Generation::new(1).unwrap()));
-        let mut latest = RevocationSbatVec::new();
+        let mut latest = RevocationSbatOwned::new();
         latest.push(Component::new(ascii("sbat"), Generation::new(1).unwrap()));
         latest.push(Component::new(ascii("shim"), Generation::new(2).unwrap()));
         let expected = "
