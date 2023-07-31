@@ -12,7 +12,7 @@
 //! executable. See the crate documentation for details of how it is
 //! used.
 
-use crate::csv::{parse_csv, Record};
+use crate::csv::{parse_csv, trim_ascii_at_null, Record};
 use crate::{Component, ParseError, PushError};
 use ascii::AsciiStr;
 use core::fmt::{self, Formatter};
@@ -87,6 +87,8 @@ pub trait ImageSbat<'a> {
     where
         Self: Default,
     {
+        let input = trim_ascii_at_null(input)?;
+
         let mut sbat = Self::default();
 
         parse_csv(input, |record: Record<NUM_ENTRY_FIELDS>| {

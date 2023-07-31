@@ -11,7 +11,7 @@
 //! Typically this data is read from a UEFI variable. See the crate
 //! documentation for details of how it is used.
 
-use crate::csv::{parse_csv, Record};
+use crate::csv::{parse_csv, trim_ascii_at_null, Record};
 use crate::{Component, Entry, ImageSbat, ParseError, PushError};
 use ascii::AsciiStr;
 use core::fmt::{self, Formatter};
@@ -60,6 +60,8 @@ pub trait RevocationSbat<'a> {
     where
         Self: Default,
     {
+        let input = trim_ascii_at_null(input)?;
+
         let mut revocations = Self::default();
 
         let mut first = true;
