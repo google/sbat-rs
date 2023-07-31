@@ -29,9 +29,6 @@ pub enum ParseError {
     /// [`Generation`]: crate::Generation
     InvalidGeneration,
 
-    /// CSV has more records than allowed.
-    TooManyRecords,
-
     /// CSV record has too few fields.
     TooFewFields,
 }
@@ -50,10 +47,6 @@ impl Display for ParseError {
             Self::InvalidGeneration => {
                 write!(f, "invalid generation, must be a positive integer")
             }
-            Self::TooManyRecords => write!(
-                f,
-                "the output storage is too small to contain the parsed CSV"
-            ),
             Self::TooFewFields => {
                 write!(f, "a CSV record does not have enough fields")
             }
@@ -63,19 +56,6 @@ impl Display for ParseError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for ParseError {}
-
-/// Error returned by `try_push` if the underlying storage is out of space.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct PushError;
-
-impl Display for PushError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "the underlying storage is out of space")
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for PushError {}
 
 #[cfg(test)]
 mod tests {
@@ -92,8 +72,6 @@ mod tests {
         // messages, just ensure nothing panics.
         format!("{}", ParseError::InvalidAscii);
         format!("{}", ParseError::InvalidGeneration);
-        format!("{}", ParseError::TooManyRecords);
         format!("{}", ParseError::TooFewFields);
-        format!("{}", PushError);
     }
 }
