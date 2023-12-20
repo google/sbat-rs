@@ -79,7 +79,7 @@ fn dump_section(input: &Path, section_name: &str) -> Result<()> {
 
 fn image_sbat_to_table_string(image_sbat: &ImageSbat) -> String {
     let mut builder = tabled::builder::Builder::default();
-    builder.set_header([
+    builder.push_record([
         "component",
         "gen",
         "vendor",
@@ -111,7 +111,7 @@ fn sbat_level_section_to_table_string(
     latest: &RevocationSbat,
 ) -> String {
     let mut builder = tabled::builder::Builder::default();
-    builder.set_header([
+    builder.push_record([
         "previous name",
         "previous gen",
         "latest name",
