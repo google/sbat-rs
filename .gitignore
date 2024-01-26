@@ -1,3 +1,4 @@
+/cov_report
 /fuzz/artifacts
 /fuzz/corpus
 /fuzz/coverage

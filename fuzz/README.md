@@ -1,8 +1,15 @@
 # fuzz-sbat
 
-See the [Rust Fuzz Book] for the initial setup.
+Initial setup:
 
-Run the fuzzer:
+```
+rustup component add --toolchain nightly llvm-tools-preview
+cargo install cargo-fuzz
+cargo install grcov
+```
+
+Run the fuzzer for as long as you like:
+
 ```
 cargo +nightly fuzz run combo
 ```
@@ -10,17 +17,12 @@ cargo +nightly fuzz run combo
 Generate coverage:
 
 ```
-rustup component add --toolchain nightly llvm-tools-preview
+# Run this from the repository root.
+make -C fuzz cov
 
-cargo +nightly fuzz coverage combo
-
-cargo +nightly cov -- show target/x86_64-unknown-linux-gnu/coverage/x86_64-unknown-linux-gnu/release/combo \
-    --format=html \
-    --instr-profile=fuzz/coverage/combo/coverage.profdata \
-    > index.html
+# Output will be in `cov_report/index.html`.
 ```
 
-(Note that the coverage steps are slightly different from what the Fuzz
-Book says to do, see <https://github.com/rust-fuzz/cargo-fuzz/issues/308>).
+See also the [Rust Fuzz Book].
 
-[Rust Fuzz Book]: https://rust-fuzz.github.io/book/cargo-fuzz/setup.html
+[Rust Fuzz Book]: https://rust-fuzz.github.io/book/cargo-fuzz
