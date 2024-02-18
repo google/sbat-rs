@@ -19,12 +19,12 @@
 //!
 //! Each entry in the revocation list contains component name and
 //! version fields. (The first entry, which is the sbat version, also
-//! has a date field, but it is purely cosmetic.) When validating an
-//! image, each component in the image is checked against the revocation
-//! entries. If the name matches, and if the component's version is less
-//! than the version in the corresponding revocation entry, the
-//! component is considered revoked and the image will not pass
-//! validation.
+//! has a date field. That date field acts as a version for the whole
+//! revocation list.) When validating an image, each component in the
+//! image is checked against the revocation entries. If the name
+//! matches, and if the component's version is less than the version in
+//! the corresponding revocation entry, the component is considered
+//! revoked and the image will not pass validation.
 //!
 //! The details and exact validation rules are described further in the
 //! [SBAT.md] and [SBAT.example.md] files in the shim repo.
