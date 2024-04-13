@@ -1,0 +1,43 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+# https://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+# <LICENSE-MIT or https://opensource.org/licenses/MIT>, at your
+# option. This file may not be copied, modified, or distributed
+# except according to those terms.
+
+on:
+  push:
+    branches:
+
+# This workflow defines two jobs that work in tandem across two repos.
+jobs:
+  # This job only runs on the official repo. It copies commits to
+  # the mirror repo.
+  coverage-copy-to-mirror:
+    if: github.repository == 'google/sbat-rs'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run:
+          # TODO: copy the commit
+          env
+          # TODO: gh pr comment?
+
+  # This job only runs on the mirror repo. It sends coverage data to
+  # codecov.io using an API token that is only available in the mirror
+  # repo.
+  coverage:
+    if: github.repository == 'nicholasbishop/sbat-rs-mirror'
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+      - uses: codecov/codecov-action@v4
+        with:
+          files: lcov.info
+          fail_ci_if_error: true

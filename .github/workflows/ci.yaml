@@ -95,20 +95,6 @@ jobs:
     - run: cargo install --locked cargo-deny
     - run: cargo deny check
 
-  coverage:
-    runs-on: ubuntu-latest
-    env:
-      CARGO_TERM_COLOR: always
-    steps:
-      - uses: actions/checkout@v4
-      - uses: taiki-e/install-action@cargo-llvm-cov
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
-      - uses: codecov/codecov-action@v3
-        with:
-          files: lcov.info
-          fail_ci_if_error: true
-
   spellcheck:
     runs-on: ubuntu-22.04
     steps:
