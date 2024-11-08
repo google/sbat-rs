@@ -67,8 +67,7 @@ impl Display for RevocationSectionError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for RevocationSectionError {}
+impl core::error::Error for RevocationSectionError {}
 
 /// Revocation data embedded in the `.sbatlevel` section of a shim executable.
 ///
