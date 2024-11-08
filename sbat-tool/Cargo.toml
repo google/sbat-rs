@@ -22,7 +22,7 @@ version.workspace = true
 anyhow = "1.0.72"
 ascii = { version = "1.1.0", default-features = false }
 clap = { version = "4.4.8", features = ["derive"] }
-fs-err = "2.9.0"
+fs-err = "3.0.0"
 itertools = "0.13.0"
 object = { version = "0.36.0", default-features = false, features = ["pe", "read", "std"] }
 sbat = { version = "0.5.1", path = "../sbat", features = ["std"] }
