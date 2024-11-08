@@ -221,7 +221,7 @@ dependencies = [
 
 [[package]]
 name = "sbat"
-version = "0.5.2"
+version = "0.6.0"
 dependencies = [
  "arrayvec",
  "ascii",
@@ -230,7 +230,7 @@ dependencies = [
 
 [[package]]
 name = "sbat-tool"
-version = "0.5.2"
+version = "0.6.0"
 dependencies = [
  "anyhow",
  "ascii",
