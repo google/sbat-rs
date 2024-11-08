@@ -102,7 +102,7 @@ impl RevocationSbat {
 
     /// Date of the revocation data, used as a comparable version. This
     /// is optional and may not be present. Versions should be compared
-    /// lexographically.
+    /// lexicographically.
     #[allow(clippy::missing_panics_doc)]
     #[must_use]
     pub fn date(&self) -> Option<&AsciiStr> {
