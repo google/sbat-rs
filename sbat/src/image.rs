@@ -15,6 +15,7 @@
 use crate::csv::{trim_ascii_at_null, CsvIter, Record};
 use crate::{Component, ParseError};
 use ascii::AsciiStr;
+use core::ptr;
 
 /// Standard PE section name for SBAT metadata.
 pub const SBAT_SECTION_NAME: &str = ".sbat";
@@ -132,7 +133,7 @@ impl ImageSbat {
     pub(crate) fn from_ascii_str_unchecked(s: &AsciiStr) -> &Self {
         // SAFETY: `Self` is a `repr(transparent)` wrapper around
         // `AsciiStr`, so the types are compatible.
-        unsafe { &*(s as *const AsciiStr as *const Self) }
+        unsafe { &*(ptr::from_ref(s) as *const Self) }
     }
 
     /// Get the underlying ASCII CSV string.

@@ -14,6 +14,7 @@
 use crate::csv::{trim_ascii_at_null, CsvIter};
 use crate::{Component, Entry, ImageSbat, ParseError};
 use ascii::AsciiStr;
+use core::ptr;
 
 /// The first entry has the component name and generation like the
 /// others, but may also have a date field.
@@ -90,7 +91,7 @@ impl RevocationSbat {
     pub(crate) fn from_ascii_str_unchecked(s: &AsciiStr) -> &Self {
         // SAFETY: `Self` is a `repr(transparent)` wrapper around
         // `AsciiStr`, so the types are compatible.
-        unsafe { &*(s as *const AsciiStr as *const Self) }
+        unsafe { &*(ptr::from_ref(s) as *const Self) }
     }
 
     /// Get the underlying ASCII CSV string.
