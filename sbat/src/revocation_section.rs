@@ -104,7 +104,7 @@ impl<'a> RevocationSection<'a> {
     #[allow(clippy::missing_panics_doc)]
     pub fn parse(
         mut data: &'a [u8],
-    ) -> Result<RevocationSection, RevocationSectionError> {
+    ) -> Result<RevocationSection<'a>, RevocationSectionError> {
         use RevocationSectionError::*;
 
         const PAYLOAD_HEADER_SIZE: usize = mem::size_of::<u32>() * 2;
