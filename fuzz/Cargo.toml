@@ -2,7 +2,8 @@
 name = "fuzz-sbat"
 version = "0.0.0"
 publish = false
-edition = "2021"
+edition.workspace = true
+license.workspace = true
 
 [package.metadata]
 cargo-fuzz = true
@@ -11,15 +12,9 @@ cargo-fuzz = true
 libfuzzer-sys = "0.4"
 sbat = { path = "../sbat", features = ["std"] }
 
-# Prevent the fuzz package from interfering with the main workspace.
-[workspace]
-members = ["."]
-
-[profile.release]
-debug = 1
-
 [[bin]]
 name = "combo"
 path = "fuzz_targets/combo.rs"
 test = false
 doc = false
+bench = false
