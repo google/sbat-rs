@@ -91,9 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: Swatinem/rust-cache@v2
-    - run: cargo install --locked cargo-deny
-    - run: cargo deny check
+    - uses: EmbarkStudios/cargo-deny-action@v2
 
   coverage:
     runs-on: ubuntu-latest
