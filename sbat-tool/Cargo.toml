@@ -24,6 +24,6 @@ ascii = { version = "1.1.0", default-features = false }
 clap = { version = "4.4.8", features = ["derive"] }
 fs-err = "3.0.0"
 itertools = "0.14.0"
-object = { version = "0.36.0", default-features = false, features = ["pe", "read", "std"] }
+object = { version = "0.37.0", default-features = false, features = ["pe", "read", "std"] }
 sbat = { version = "0.6.0", path = "../sbat", features = ["std"] }
 tabled = { version = "0.17.0", default-features = false, features = ["std"] }
