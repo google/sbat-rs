@@ -25,7 +25,7 @@ pub struct Component<'a> {
 impl<'a> Component<'a> {
     /// Create a `Component`.
     #[must_use]
-    pub fn new(name: &AsciiStr, generation: Generation) -> Component {
+    pub fn new(name: &AsciiStr, generation: Generation) -> Component<'_> {
         Component { name, generation }
     }
 
