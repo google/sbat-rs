@@ -80,16 +80,16 @@ mod revocations;
 #[cfg(feature = "alloc")]
 mod alloc;
 
+pub use ValidationResult::{Allowed, Revoked};
 pub use component::Component;
 pub use csv::ALLOWED_SPECIAL_CHARS;
 pub use error::ParseError;
 pub use generation::Generation;
-pub use image::{Entries, Entry, ImageSbat, Vendor, SBAT_SECTION_NAME};
+pub use image::{Entries, Entry, ImageSbat, SBAT_SECTION_NAME, Vendor};
 pub use revocation_section::{
-    RevocationSection, RevocationSectionError, REVOCATION_SECTION_NAME,
+    REVOCATION_SECTION_NAME, RevocationSection, RevocationSectionError,
 };
 pub use revocations::{RevocationSbat, RevokedComponents, ValidationResult};
-pub use ValidationResult::{Allowed, Revoked};
 
 #[cfg(feature = "alloc")]
 pub use alloc::{ImageSbatOwned, RevocationSbatOwned};

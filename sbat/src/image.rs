@@ -12,7 +12,7 @@
 //! executable. See the crate documentation for details of how it is
 //! used.
 
-use crate::csv::{trim_ascii_at_null, CsvIter, Record};
+use crate::csv::{CsvIter, Record, trim_ascii_at_null};
 use crate::{Component, ParseError};
 use ascii::AsciiStr;
 use core::ptr;
