@@ -60,7 +60,7 @@
 #![allow(clippy::enum_glob_use)]
 #![allow(clippy::missing_errors_doc)]
 #![allow(clippy::module_name_repetitions)]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 // Allow using `std` if the `std` feature is enabled, or when running
 // tests. Otherwise enable `no_std`.
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
