@@ -171,11 +171,11 @@ mod tests {
         AsciiStr::from_ascii(s).unwrap()
     }
 
-    fn make_component(name: &str, gen: u32) -> Component {
+    fn make_component(name: &str, gen: u32) -> Component<'_> {
         Component::new(ascii(name), Generation::new(gen).unwrap())
     }
 
-    fn make_entry(name: &str, gen: u32) -> Entry {
+    fn make_entry(name: &str, gen: u32) -> Entry<'_> {
         Entry::new(make_component(name, gen), Vendor::default())
     }
 

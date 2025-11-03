@@ -179,7 +179,7 @@ mod tests {
         assert_eq!(trim_ascii_at_null(b"a,b,c").unwrap().as_bytes(), b"a,b,c");
     }
 
-    fn parse_simple<'a>(s: &'a str) -> Vec<Result<Vec<&str>, ParseError>> {
+    fn parse_simple(s: &str) -> Vec<Result<Vec<&str>, ParseError>> {
         let s = AsciiStr::from_ascii(s).unwrap();
         CsvIter::<3>::new(s)
             .map(|record| -> Result<Vec<&str>, ParseError> {
