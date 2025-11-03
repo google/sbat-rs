@@ -69,8 +69,8 @@ mod tests {
 
         // For the rest, don't bother testing the specific error
         // messages, just ensure nothing panics.
-        format!("{}", ParseError::InvalidAscii);
-        format!("{}", ParseError::InvalidGeneration);
-        format!("{}", ParseError::TooFewFields);
+        let _ = format!("{}", ParseError::InvalidAscii);
+        let _ = format!("{}", ParseError::InvalidGeneration);
+        let _ = format!("{}", ParseError::TooFewFields);
     }
 }

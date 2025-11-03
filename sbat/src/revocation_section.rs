@@ -185,12 +185,12 @@ mod tests {
     fn test_error_display() {
         // Don't bother testing the specific error messages, just ensure
         // nothing panics.
-        format!("{}", RevocationSectionError::MissingVersion);
-        format!("{}", RevocationSectionError::InvalidVersion(1));
-        format!("{}", RevocationSectionError::MissingHeader);
-        format!("{}", RevocationSectionError::InvalidPreviousOffset(0));
-        format!("{}", RevocationSectionError::InvalidLatestOffset(0));
-        format!("{}", RevocationSectionError::MissingPreviousNull);
-        format!("{}", RevocationSectionError::MissingLatestNull);
+        let _ = format!("{}", RevocationSectionError::MissingVersion);
+        let _ = format!("{}", RevocationSectionError::InvalidVersion(1));
+        let _ = format!("{}", RevocationSectionError::MissingHeader);
+        let _ = format!("{}", RevocationSectionError::InvalidPreviousOffset(0));
+        let _ = format!("{}", RevocationSectionError::InvalidLatestOffset(0));
+        let _ = format!("{}", RevocationSectionError::MissingPreviousNull);
+        let _ = format!("{}", RevocationSectionError::MissingLatestNull);
     }
 }
