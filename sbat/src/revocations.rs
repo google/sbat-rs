@@ -11,7 +11,7 @@
 //! Typically this data is read from a UEFI variable. See the crate
 //! documentation for details of how it is used.
 
-use crate::csv::{trim_ascii_at_null, CsvIter};
+use crate::csv::{CsvIter, trim_ascii_at_null};
 use crate::{Component, Entry, ImageSbat, ParseError};
 use ascii::AsciiStr;
 use core::ptr;

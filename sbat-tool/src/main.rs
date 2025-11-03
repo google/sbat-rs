@@ -6,14 +6,14 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use ascii::AsciiStr;
 use clap::{Parser, Subcommand};
 use fs_err as fs;
 use itertools::Itertools;
 use object::{Object, ObjectSection};
 use sbat::{
-    ImageSbat, RevocationSbat, RevocationSection, REVOCATION_SECTION_NAME,
+    ImageSbat, REVOCATION_SECTION_NAME, RevocationSbat, RevocationSection,
     SBAT_SECTION_NAME,
 };
 use std::io::{self, Write};
@@ -237,26 +237,32 @@ mod tests {
     /// Test that a bad input path doesn't cause a panic.
     #[test]
     fn test_invalid_path() {
-        assert!(run_action(&Args {
-            action: Action::Dump {
-                section: SBAT_SECTION_NAME.into(),
-                input: "/bad/path".into(),
-            }
-        })
-        .is_err());
+        assert!(
+            run_action(&Args {
+                action: Action::Dump {
+                    section: SBAT_SECTION_NAME.into(),
+                    input: "/bad/path".into(),
+                }
+            })
+            .is_err()
+        );
 
-        assert!(run_action(&Args {
-            action: Action::Validate {
-                input: vec!["/bad/path".into()],
-            }
-        })
-        .is_err());
+        assert!(
+            run_action(&Args {
+                action: Action::Validate {
+                    input: vec!["/bad/path".into()],
+                }
+            })
+            .is_err()
+        );
 
-        assert!(run_action(&Args {
-            action: Action::ValidateRevocations {
-                input: vec!["/bad/path".into()],
-            }
-        })
-        .is_err());
+        assert!(
+            run_action(&Args {
+                action: Action::ValidateRevocations {
+                    input: vec!["/bad/path".into()],
+                }
+            })
+            .is_err()
+        );
     }
 }
