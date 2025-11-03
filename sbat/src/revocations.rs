@@ -171,12 +171,12 @@ mod tests {
         AsciiStr::from_ascii(s).unwrap()
     }
 
-    fn make_component(name: &str, gen: u32) -> Component<'_> {
-        Component::new(ascii(name), Generation::new(gen).unwrap())
+    fn make_component(name: &str, generation: u32) -> Component<'_> {
+        Component::new(ascii(name), Generation::new(generation).unwrap())
     }
 
-    fn make_entry(name: &str, gen: u32) -> Entry<'_> {
-        Entry::new(make_component(name, gen), Vendor::default())
+    fn make_entry(name: &str, generation: u32) -> Entry<'_> {
+        Entry::new(make_component(name, generation), Vendor::default())
     }
 
     fn parse_success_helper(revocations: &RevocationSbat) {
