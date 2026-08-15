@@ -9,6 +9,8 @@ on:
 
 name: CI
 
+permissions: {}
+
 env:
   RUSTDOCFLAGS: -Dwarnings
   RUSTFLAGS: -Dwarnings
