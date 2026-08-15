@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - run: cargo install auto-release
       - run: auto-release -p sbat -p sbat-tool --condition subject
         env:
